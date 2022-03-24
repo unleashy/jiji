@@ -1,0 +1,31 @@
+{
+  "name": "sinos",
+  "version": "0.0.0",
+  "author": "Emmanuelle Fernandes",
+  "license": "MIT",
+  "source": "src/index.ts",
+  "main": "dist/main.js",
+  "module": "dist/module.js",
+  "types": "dist/types.d.ts",
+  "scripts": {
+    "watch": "parcel watch",
+    "build": "parcel build",
+    "test": "test:unit",
+    "test:unit": "uvu -r ts-node/register tests/unit -i fixtures",
+    "test:cov": "c8 --include=src -r text -r html yarn test",
+    "test:single": "ts-node"
+  },
+  "packageManager": "yarn@3.2.0",
+  "devDependencies": {
+    "@parcel/packager-ts": "2.4.0",
+    "@parcel/transformer-typescript-types": "2.4.0",
+    "@types/node": "^17.0.23",
+    "c8": "^7.11.0",
+    "parcel": "^2.4.0",
+    "prettier": "^2.6.0",
+    "ts-node": "^10.7.0",
+    "typescript": "^4.6.2",
+    "uvu": "^0.5.3"
+  },
+  "sideEffects": false
+}

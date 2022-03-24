@@ -1,0 +1,5 @@
+{
+  "endOfLine": "lf",
+  "arrowParens": "avoid",
+  "trailingComma": "none"
+}
