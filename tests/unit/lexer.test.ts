@@ -54,6 +54,16 @@ const testCases: TestCase[] = [
       new Token(kinds.greaterEqual, s(9, 2)),
       new Token(kinds.end, s(11, 0))
     ]
+  },
+  {
+    desc: "accepts integers",
+    input: "0 0987654321 45_6__778___9_",
+    output: s => [
+      new Token(kinds.integer(0), s(0, 1)),
+      new Token(kinds.integer(987654321), s(2, 10)),
+      new Token(kinds.integer(4567789), s(13, 14)),
+      new Token(kinds.end, s(27, 0))
+    ]
   }
 ];
 

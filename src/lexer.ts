@@ -15,8 +15,61 @@ export class Lexer {
 
     this.source.startSpan();
 
-    const c = this.source.next();
+    const token = this.nextInteger() || this.nextSymbol();
+    if (token) {
+      return token;
+    } else {
+      // TODO: handle unknown char error
+      return new Token(kinds.end, this.source.endSpan());
+    }
+  }
 
+  private skipWhitespace(): void {
+    while (true) {
+      switch (this.source.peek()) {
+        case " ":
+        case "\t":
+        case "\r":
+        case "\n":
+          this.source.next();
+          break;
+
+        case "-":
+          if (this.source.peek(1) === "-") {
+            this.source.nextWhile(c => c !== "\n");
+            break;
+          } else {
+            return;
+          }
+
+        default:
+          return;
+      }
+    }
+  }
+
+  nextInteger(): Token | undefined {
+    function isDigit(c: string) {
+      return c >= "0" && c <= "9";
+    }
+
+    function isDigitOrUnderscore(c: string) {
+      return isDigit(c) || c === "_";
+    }
+
+    const c = this.source.peek();
+    if (c === undefined || !isDigit(c)) return;
+
+    const charsConsumed = this.source.nextWhile(isDigitOrUnderscore);
+    if (charsConsumed > 0) {
+      const span = this.source.endSpan();
+      const value = Number.parseInt(span.text.replaceAll("_", ""), 10);
+      return new Token(kinds.integer(value), span);
+    }
+  }
+
+  nextSymbol(): Token | undefined {
+    const c = this.source.next();
     const kind = (() => {
       // prettier-ignore
       switch (c) {
@@ -42,34 +95,12 @@ export class Lexer {
 
         case undefined: return kinds.end;
 
-        default: return kinds.end;
+        default: return undefined;
       }
     })();
 
-    return new Token(kind, this.source.endSpan());
-  }
-
-  private skipWhitespace(): void {
-    while (true) {
-      switch (this.source.peek()) {
-        case " ":
-        case "\t":
-        case "\r":
-        case "\n":
-          this.source.next();
-          break;
-
-        case "-":
-          if (this.source.peek(1) === "-") {
-            this.source.nextWhile(c => c !== "\n");
-            break;
-          } else {
-            return;
-          }
-
-        default:
-          return;
-      }
+    if (kind) {
+      return new Token(kind, this.source.endSpan());
     }
   }
 }
@@ -96,19 +127,18 @@ class Source {
     return this.file.at(peekIndex);
   }
 
-  nextWhile(f: (c: string) => boolean): boolean {
+  nextWhile(f: (c: string) => boolean): number {
+    const start = this.currentIndex;
     while (true) {
       const c = this.file.at(this.currentIndex);
-      if (c === undefined) {
-        return false;
-      }
-
-      if (f(c)) {
+      if (c !== undefined && f(c)) {
         this.currentIndex++;
       } else {
-        return true;
+        break;
       }
     }
+
+    return this.currentIndex - start;
   }
 
   match(s: string): boolean {
