@@ -15,7 +15,7 @@ export class Lexer {
 
     this.source.startSpan();
 
-    const token = this.nextInteger() || this.nextSymbol();
+    const token = this.nextKeyword() || this.nextInteger() || this.nextSymbol();
     if (token) {
       return token;
     } else {
@@ -45,6 +45,26 @@ export class Lexer {
         default:
           return;
       }
+    }
+  }
+
+  nextKeyword(): Token | undefined {
+    const c = this.source.peek();
+    const kind = (() => {
+      switch (c) {
+        case "t":
+          return this.source.match("true") ? kinds.true : undefined;
+
+        case "f":
+          return this.source.match("false") ? kinds.false : undefined;
+
+        default:
+          return undefined;
+      }
+    })();
+
+    if (kind) {
+      return new Token(kind, this.source.endSpan());
     }
   }
 

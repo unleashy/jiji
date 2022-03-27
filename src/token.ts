@@ -11,6 +11,9 @@ export const kinds = Object.freeze({
 
   integer: (value: number) => kind({ name: "integer", value }),
 
+  true: kind({ name: "true" }),
+  false: kind({ name: "false" }),
+
   plus: kind({ name: "plus" }),
   minus: kind({ name: "minus" }),
   star: kind({ name: "star" }),

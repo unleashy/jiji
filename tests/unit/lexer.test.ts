@@ -64,6 +64,15 @@ const testCases: TestCase[] = [
       new Token(kinds.integer(4567789), s(13, 14)),
       new Token(kinds.end, s(27, 0))
     ]
+  },
+  {
+    desc: "accepts all keywords",
+    input: "true false",
+    output: s => [
+      new Token(kinds.true, s(0, 4)),
+      new Token(kinds.false, s(5, 5)),
+      new Token(kinds.end, s(10, 0))
+    ]
   }
 ];
 
