@@ -17,8 +17,12 @@ export const kinds = Object.freeze({
   parenOpen: kind({ name: "parenOpen" }),
   parenClose: kind({ name: "parenClose" }),
   bang: kind({ name: "bang" }),
+  equals: kind({ name: "equals" }),
+  bangEquals: kind({ name: "bangEquals" }),
   less: kind({ name: "less" }),
-  greater: kind({ name: "greater" })
+  lessEqual: kind({ name: "lessEqual" }),
+  greater: kind({ name: "greater" }),
+  greaterEqual: kind({ name: "greaterEqual" })
 });
 
 export type Kinds = typeof kinds;

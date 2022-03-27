@@ -27,9 +27,21 @@ export class Lexer {
         case "%": return kinds.percent;
         case "(": return kinds.parenOpen;
         case ")": return kinds.parenClose;
-        case "!": return kinds.bang;
-        case "<": return kinds.less;
-        case ">": return kinds.greater;
+
+        case "=":
+          return this.source.match("=") ? kinds.equals : kinds.end;
+
+        case "!":
+          return this.source.match("=") ? kinds.bangEquals : kinds.bang;
+
+        case "<":
+          return this.source.match("=") ? kinds.lessEqual : kinds.less;
+
+        case ">":
+          return this.source.match("=") ? kinds.greaterEqual : kinds.greater;
+
+        case undefined: return kinds.end;
+
         default: return kinds.end;
       }
     })();
@@ -109,9 +121,7 @@ class Source {
   }
 
   hasMatch(s: string): boolean {
-    return (
-      this.file.slice(this.currentIndex, this.currentIndex + s.length) === s
-    );
+    return this.file.matchAt(this.currentIndex, s);
   }
 
   startSpan(): void {

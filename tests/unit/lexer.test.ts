@@ -43,6 +43,17 @@ const testCases: TestCase[] = [
       new Token(kinds.greater, s(9, 1)),
       new Token(kinds.end, s(10, 0))
     ]
+  },
+  {
+    desc: "accepts all multi-character symbols",
+    input: "== != <= >=",
+    output: s => [
+      new Token(kinds.equals, s(0, 2)),
+      new Token(kinds.bangEquals, s(3, 2)),
+      new Token(kinds.lessEqual, s(6, 2)),
+      new Token(kinds.greaterEqual, s(9, 2)),
+      new Token(kinds.end, s(11, 0))
+    ]
   }
 ];
 
