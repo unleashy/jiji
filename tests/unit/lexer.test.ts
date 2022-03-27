@@ -2,13 +2,17 @@ import { test } from "uvu";
 import * as assert from "uvu/assert";
 import { File } from "../../src/file";
 import { Span } from "../../src/span";
-import { kinds, Token } from "../../src/token";
+import { SinosError, errorKinds } from "../../src/error";
+import { Token, kinds } from "../../src/token";
 import { Lexer } from "../../src/lexer";
 
 interface TestCase {
   desc: string;
   input: string;
-  output: (makeSpan: (index: number, length: number) => Span) => Token[];
+  output: (
+    makeSpan: (index: number, length: number) => Span
+  ) => (Token | SinosError)[];
+  expectError?: boolean;
 }
 
 const testCases: TestCase[] = [
@@ -26,6 +30,12 @@ const testCases: TestCase[] = [
     desc: "ignores comments",
     input: "--foo--bar\n     -- -- hello c:",
     output: s => [new Token(kinds.end, s(30, 0))]
+  },
+  {
+    desc: "fails on unknown character",
+    input: "#",
+    output: s => [new SinosError(errorKinds.unknownChar("#"), s(0, 1))],
+    expectError: true
   },
   {
     desc: "accepts all single-character symbols",
@@ -81,16 +91,29 @@ for (const testCase of testCases) {
     const file = new File("<test>", testCase.input);
     const sut = new Lexer(file);
 
-    const result = [];
+    const actual = [];
     while (true) {
-      const token = sut.next();
-      result.push(token);
-      if (token.isEnd) break;
+      try {
+        const token = sut.next();
+        actual.push(token);
+        if (token.isEnd) break;
+      } catch (e) {
+        if (testCase.expectError && e instanceof SinosError) {
+          actual.push(e);
+          break;
+        } else {
+          throw e;
+        }
+      }
     }
 
-    assert.equal(
-      result,
-      testCase.output((index, length) => new Span(file, index, length))
+    assert.snapshot(
+      JSON.stringify(actual, undefined, "  "),
+      JSON.stringify(
+        testCase.output((index, length) => new Span(file, index, length)),
+        undefined,
+        "  "
+      )
     );
   });
 }

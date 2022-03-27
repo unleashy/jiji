@@ -1,6 +1,7 @@
 import { strict as assert } from "assert";
 import { Span } from "./span";
 import { File } from "./file";
+import { SinosError, errorKinds } from "./error";
 import { kinds, Token } from "./token";
 
 export class Lexer {
@@ -15,13 +16,7 @@ export class Lexer {
 
     this.source.startSpan();
 
-    const token = this.nextKeyword() || this.nextInteger() || this.nextSymbol();
-    if (token) {
-      return token;
-    } else {
-      // TODO: handle unknown char error
-      return new Token(kinds.end, this.source.endSpan());
-    }
+    return this.nextKeyword() || this.nextInteger() || this.nextSymbol();
   }
 
   private skipWhitespace(): void {
@@ -88,7 +83,7 @@ export class Lexer {
     }
   }
 
-  nextSymbol(): Token | undefined {
+  nextSymbol(): Token {
     const c = this.source.next();
     const kind = (() => {
       // prettier-ignore
@@ -115,13 +110,12 @@ export class Lexer {
 
         case undefined: return kinds.end;
 
-        default: return undefined;
+        default:
+          throw new SinosError(errorKinds.unknownChar(c), this.source.endSpan());
       }
     })();
 
-    if (kind) {
-      return new Token(kind, this.source.endSpan());
-    }
+    return new Token(kind, this.source.endSpan());
   }
 }
 

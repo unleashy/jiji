@@ -11,4 +11,5 @@
 #.pnp.*
 
 dist
+coverage
 .parcel-cache

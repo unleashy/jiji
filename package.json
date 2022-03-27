@@ -10,9 +10,9 @@
   "scripts": {
     "watch": "parcel watch",
     "build": "parcel build",
-    "test": "test:unit",
+    "test": "yarn test:unit",
     "test:unit": "uvu -r ts-node/register tests/unit -i fixtures",
-    "test:cov": "c8 --include=src -r text -r html yarn test",
+    "test:cov": "c8 --all --src=src --include=src -r text -r html yarn test",
     "test:single": "ts-node"
   },
   "packageManager": "yarn@3.2.0",
