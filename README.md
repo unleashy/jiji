@@ -7,7 +7,12 @@ small programming language
 in PEG form:
 
 ```text
-Module ← Expr End
+Module ← Stmt* End
+
+Stmt ← ExprStmt
+
+ExprStmt ← Expr ";"
+
 Expr ← CmpExpr
 
 CmpExpr ← AddExpr (("==" / "!=" / "<" / "<=" / ">" / ">=") AddExpr)?
