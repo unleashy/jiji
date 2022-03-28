@@ -10,7 +10,7 @@ in PEG form:
 Module ← Expr End
 Expr ← CmpExpr
 
-CmpExpr ← AddExpr (("==" / "!=" / "<" / "<=" / ">" / ">=") AddExpr)*
+CmpExpr ← AddExpr (("==" / "!=" / "<" / "<=" / ">" / ">=") AddExpr)?
 AddExpr ← MulExpr (("+" / "-") MulExpr)*
 MulExpr ← UnaryExpr (("*" / "/" / "%") UnaryExpr)*
 UnaryExpr ← ("-" / "+" / "!")? UnaryExpr
