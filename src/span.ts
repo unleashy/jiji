@@ -1,3 +1,4 @@
+import { strict as assert } from "assert";
 import { File } from "./file";
 
 export class Span {
@@ -6,6 +7,17 @@ export class Span {
     readonly index: number,
     readonly length: number
   ) {}
+
+  join(other: Span): Span {
+    assert.equal(this.file, other.file, "mismatched files");
+
+    const earliestIndex = Math.min(this.index, other.index);
+    const latestIndex = Math.max(
+      this.index + this.length,
+      other.index + other.length
+    );
+    return new Span(this.file, earliestIndex, latestIndex - earliestIndex);
+  }
 
   get text(): string {
     return this.file.slice(this.index, this.index + this.length);
