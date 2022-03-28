@@ -14,6 +14,7 @@ export const kinds = Object.freeze({
   true: kind({ name: "true" }),
   false: kind({ name: "false" }),
 
+  semi: kind({ name: "semi" }),
   plus: kind({ name: "plus" }),
   minus: kind({ name: "minus" }),
   star: kind({ name: "star" }),
@@ -42,3 +43,5 @@ export class Token<K extends Kind = Kind> {
     return this.kind === kinds.end;
   }
 }
+
+export type TokenOfKind<K extends keyof Kinds> = Token<KindType<Kinds[K]>>;

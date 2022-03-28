@@ -39,19 +39,20 @@ const testCases: TestCase[] = [
   },
   {
     desc: "accepts all single-character symbols",
-    input: "+-*/%()!<>",
+    input: ";+-*/%()!<>",
     output: s => [
-      new Token(kinds.plus, s(0, 1)),
-      new Token(kinds.minus, s(1, 1)),
-      new Token(kinds.star, s(2, 1)),
-      new Token(kinds.slash, s(3, 1)),
-      new Token(kinds.percent, s(4, 1)),
-      new Token(kinds.parenOpen, s(5, 1)),
-      new Token(kinds.parenClose, s(6, 1)),
-      new Token(kinds.bang, s(7, 1)),
-      new Token(kinds.less, s(8, 1)),
-      new Token(kinds.greater, s(9, 1)),
-      new Token(kinds.end, s(10, 0))
+      new Token(kinds.semi, s(0, 1)),
+      new Token(kinds.plus, s(1, 1)),
+      new Token(kinds.minus, s(2, 1)),
+      new Token(kinds.star, s(3, 1)),
+      new Token(kinds.slash, s(4, 1)),
+      new Token(kinds.percent, s(5, 1)),
+      new Token(kinds.parenOpen, s(6, 1)),
+      new Token(kinds.parenClose, s(7, 1)),
+      new Token(kinds.bang, s(8, 1)),
+      new Token(kinds.less, s(9, 1)),
+      new Token(kinds.greater, s(10, 1)),
+      new Token(kinds.end, s(11, 0))
     ]
   },
   {

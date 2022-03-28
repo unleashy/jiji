@@ -88,6 +88,7 @@ export class Lexer {
     const kind = (() => {
       // prettier-ignore
       switch (c) {
+        case ";": return kinds.semi;
         case "+": return kinds.plus;
         case "-": return kinds.minus;
         case "*": return kinds.star;
