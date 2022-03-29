@@ -39,6 +39,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["c8", "npm:7.11.0"],\
             ["parcel", "npm:2.4.0"],\
             ["prettier", "npm:2.6.0"],\
+            ["ts-dedent", "npm:2.2.0"],\
             ["ts-node", "virtual:a3a553be574fa67c9ad186ff5b538624a3ce363fe5ac33fdfa07b5739520b04596e4dec2f633aa497faa2974b45345a3861fa75046d49f62d4b9550d1393ecb6#npm:10.7.0"],\
             ["typescript", "patch:typescript@npm%3A4.6.2#~builtin<compat/typescript>::version=4.6.2&hash=bda367"],\
             ["uvu", "npm:0.5.3"]\
@@ -3156,6 +3157,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["c8", "npm:7.11.0"],\
             ["parcel", "npm:2.4.0"],\
             ["prettier", "npm:2.6.0"],\
+            ["ts-dedent", "npm:2.2.0"],\
             ["ts-node", "virtual:a3a553be574fa67c9ad186ff5b538624a3ce363fe5ac33fdfa07b5739520b04596e4dec2f633aa497faa2974b45345a3861fa75046d49f62d4b9550d1393ecb6#npm:10.7.0"],\
             ["typescript", "patch:typescript@npm%3A4.6.2#~builtin<compat/typescript>::version=4.6.2&hash=bda367"],\
             ["uvu", "npm:0.5.3"]\
@@ -3361,6 +3363,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/timsort-npm-0.3.0-868a28166c-1a66cb897d.zip/node_modules/timsort/",\
           "packageDependencies": [\
             ["timsort", "npm:0.3.0"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["ts-dedent", [\
+        ["npm:2.2.0", {\
+          "packageLocation": "./.yarn/cache/ts-dedent-npm-2.2.0-00389a0e6b-93ed8f7878.zip/node_modules/ts-dedent/",\
+          "packageDependencies": [\
+            ["ts-dedent", "npm:2.2.0"]\
           ],\
           "linkType": "HARD"\
         }]\

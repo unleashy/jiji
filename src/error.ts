@@ -8,7 +8,12 @@ function errorKind<Name extends string, Other>(
 
 export const errorKinds = Object.freeze({
   // lexer errors
-  unknownChar: (char: string) => errorKind({ name: "unknownChar", char })
+  unknownChar: (char: string) => errorKind({ name: "unknownChar", char }),
+
+  // parser errors
+  expectExpr: errorKind({ name: "expectExpr" }),
+  expectSemi: errorKind({ name: "expectSemi" }),
+  expectCloseParen: errorKind({ name: "expectCloseParen" })
 });
 
 type KindType<K> = K extends (...args: never[]) => unknown ? ReturnType<K> : K;
@@ -30,6 +35,15 @@ export class SinosError extends Error {
         const char = JSON.stringify(this.errorKind.char);
         return `Unknown character ${char}`;
       }
+
+      case "expectSemi":
+        return "Missing semicolon";
+
+      case "expectExpr":
+        return "Expected an expression";
+
+      case "expectCloseParen":
+        return "Expected a closing parenthesis";
     }
   }
 }
