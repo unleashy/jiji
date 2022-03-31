@@ -25,6 +25,15 @@ const testCases: TestCase[] = [
     `
   },
   {
+    desc: "accepts a name",
+    input: "foobar;",
+    output: `
+      module<0,7>
+        exprStmt<0,7>
+          name<0,6> foobar
+    `
+  },
+  {
     desc: "accepts a single integer",
     input: "1234;",
     output: `
@@ -198,6 +207,26 @@ const testCases: TestCase[] = [
     `
   },
   {
+    desc: "accepts let statements",
+    input: "let name = 1 + 2;",
+    output: `
+      module<0,17>
+        letStmt<0,17> "name"
+          binary<11,5> +
+            integer<11,1> 1
+            integer<15,1> 2
+    `
+  },
+  {
+    desc: "accepts let statements with type",
+    input: "let name: Bool = true;",
+    output: `
+      module<0,22>
+        letStmt<0,22> "name" : Bool
+          boolean<17,4> true
+    `
+  },
+  {
     desc: "errors on missing semicolon",
     input: "1",
     error: s => new SinosError(errorKinds.expectSemi, s(1, 0))
@@ -211,6 +240,31 @@ const testCases: TestCase[] = [
     desc: "errors on missing close parenthesis",
     input: "(1",
     error: s => new SinosError(errorKinds.expectCloseParen, s(2, 0))
+  },
+  {
+    desc: "errors on missing name for let statement",
+    input: "let = 1;",
+    error: s => new SinosError(errorKinds.expectName, s(4, 1))
+  },
+  {
+    desc: "errors on missing equals for let statement",
+    input: "let a == 1;",
+    error: s => new SinosError(errorKinds.expectEqual, s(6, 2))
+  },
+  {
+    desc: "errors on missing type after colon for let statement",
+    input: "let a: = 1;",
+    error: s => new SinosError(errorKinds.expectName, s(7, 1))
+  },
+  {
+    desc: "errors on missing expression for let statement",
+    input: "let a = ;",
+    error: s => new SinosError(errorKinds.expectExpr, s(8, 1))
+  },
+  {
+    desc: "errors on missing semicolon for let statement",
+    input: "let a = 1",
+    error: s => new SinosError(errorKinds.expectSemi, s(9, 0))
   }
 ];
 
@@ -266,6 +320,15 @@ function printAst(ast: Ast): string {
       }
       break;
 
+    case "letStmt": {
+      result += ` "${ast.name}"`;
+      if (ast.type) result += ` : ${ast.type}`;
+      const value = indented(printAst(ast.value));
+
+      result += `\n${value}`;
+      break;
+    }
+
     case "exprStmt": {
       const expr = indented(printAst(ast.expr));
 
@@ -294,11 +357,16 @@ function printAst(ast: Ast): string {
       result += `\n${expr}`;
       break;
 
+    case "name":
     case "integer":
     case "boolean": {
       result += ` ${ast.value}`;
       break;
     }
+
+    default:
+      // @ts-ignore
+      assert.unreachable(`Unhandled AST node of kind ${ast.kind}`);
   }
 
   return result;

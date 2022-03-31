@@ -11,13 +11,25 @@ export interface AstModule extends AstCommon<"module"> {
   stmts: AstStmt[];
 }
 
-export type AstStmt = AstExprStmt;
+export type AstStmt = AstLetStmt | AstExprStmt;
+
+export interface AstLetStmt extends AstCommon<"letStmt"> {
+  name: string;
+  type: string | undefined;
+  value: AstExpr;
+}
 
 export interface AstExprStmt extends AstCommon<"exprStmt"> {
   expr: AstExpr;
 }
 
-export type AstExpr = AstBinary | AstUnary | AstGroup | AstInteger | AstBoolean;
+export type AstExpr =
+  | AstBinary
+  | AstUnary
+  | AstGroup
+  | AstName
+  | AstInteger
+  | AstBoolean;
 
 export type BinaryOp =
   | "=="
@@ -49,6 +61,10 @@ export interface AstGroup extends AstCommon<"group"> {
   expr: AstExpr;
 }
 
+export interface AstName extends AstCommon<"name"> {
+  value: string;
+}
+
 export interface AstInteger extends AstCommon<"integer"> {
   value: number;
 }
@@ -61,6 +77,19 @@ export const ast = {
   module: (stmts: AstStmt[], span: Span): AstModule => ({
     kind: "module",
     stmts,
+    span
+  }),
+
+  letStmt: (
+    name: string,
+    type: string | undefined,
+    value: AstExpr,
+    span: Span
+  ): AstLetStmt => ({
+    kind: "letStmt",
+    name,
+    type,
+    value,
     span
   }),
 
@@ -93,6 +122,12 @@ export const ast = {
   group: (expr: AstExpr, span: Span): AstGroup => ({
     kind: "group",
     expr,
+    span
+  }),
+
+  name: (value: string, span: Span): AstName => ({
+    kind: "name",
+    value,
     span
   }),
 

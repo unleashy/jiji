@@ -7,8 +7,9 @@ import {
   BinaryOp,
   UnaryOp,
   AstStmt,
-  ast,
-  AstExprStmt
+  AstLetStmt,
+  AstExprStmt,
+  ast
 } from "./ast";
 
 const kindToBinaryOp: Readonly<Partial<Record<keyof Kinds, BinaryOp>>> =
@@ -56,17 +57,53 @@ export class Parser {
   }
 
   private stmt(): AstStmt {
-    return this.exprStmt();
+    return this.letStmt() || this.exprStmt();
+  }
+
+  private letStmt(): AstLetStmt | undefined {
+    const let_ = this.match("let");
+    if (let_ === undefined) return undefined;
+
+    const name = this.expectKind(
+      "name",
+      badToken => new SinosError(errorKinds.expectName, badToken.span)
+    );
+
+    let type = undefined;
+    if (this.match("colon")) {
+      type = this.expectKind(
+        "name",
+        badToken => new SinosError(errorKinds.expectName, badToken.span)
+      );
+    }
+
+    this.expectKind(
+      "equal",
+      badToken => new SinosError(errorKinds.expectEqual, badToken.span)
+    );
+    const expr = this.expr();
+    const semi = this.expectSemi();
+
+    return ast.letStmt(
+      name.kind.value,
+      type?.kind.value,
+      expr,
+      let_.span.join(semi.span)
+    );
   }
 
   private exprStmt(): AstExprStmt {
     const expr = this.expr();
-    const semi = this.expectKind(
+    const semi = this.expectSemi();
+
+    return ast.exprStmt(expr, expr.span.join(semi.span));
+  }
+
+  private expectSemi(): TokenOfKind<"semi"> {
+    return this.expectKind(
       "semi",
       badToken => new SinosError(errorKinds.expectSemi, badToken.span)
     );
-
-    return ast.exprStmt(expr, expr.span.join(semi.span));
   }
 
   private expr(): AstExpr {
@@ -150,6 +187,9 @@ export class Parser {
   private primary(): AstExpr {
     const token = this.lexer.next();
     switch (token.kind.name) {
+      case "name":
+        return ast.name(token.kind.value, token.span);
+
       case "true":
         return ast.boolean(true, token.span);
 

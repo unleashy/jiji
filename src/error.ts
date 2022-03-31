@@ -16,6 +16,8 @@ export const errorKinds = Object.freeze({
   expectExpr: errorKind({ name: "expectExpr" }),
   expectSemi: errorKind({ name: "expectSemi" }),
   expectCloseParen: errorKind({ name: "expectCloseParen" }),
+  expectName: errorKind({ name: "expectName" }),
+  expectEqual: errorKind({ name: "expectEqual" }),
 
   // type errors
   unaryTypeMismatch: (op: UnaryOp, actualType: Type) =>
@@ -52,6 +54,12 @@ export class SinosError extends Error {
 
       case "expectCloseParen":
         return "Expected a closing parenthesis";
+
+      case "expectName":
+        return "Expected a name";
+
+      case "expectEqual":
+        return "Expected an equal sign";
 
       case "unaryTypeMismatch":
         return (
