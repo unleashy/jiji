@@ -5,6 +5,7 @@ small programming language that compiles to JS
 ## todo list
 
 - [~] variables (with and without type inference)
+- [ ] block scopes
 - [ ] functions
 - [ ] conditionals
 - [ ] loops (tail call elimination?)
