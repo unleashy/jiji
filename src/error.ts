@@ -23,7 +23,13 @@ export const errorKinds = Object.freeze({
   unaryTypeMismatch: (op: UnaryOp, actualType: Type) =>
     errorKind({ name: "unaryTypeMismatch", op, actualType }),
   binaryTypeMismatch: (leftType: Type, op: BinaryOp, rightType: Type) =>
-    errorKind({ name: "binaryTypeMismatch", leftType, op, rightType })
+    errorKind({ name: "binaryTypeMismatch", leftType, op, rightType }),
+  letTypeMismatch: (declared: Type, inferred: Type) =>
+    errorKind({ name: "letTypeMismatch", declared, inferred }),
+  unknownType: (typeName: string) =>
+    errorKind({ name: "unknownType", typeName }),
+  unknownBinding: (bindingName: string) =>
+    errorKind({ name: "unknownBinding", bindingName })
 });
 
 type KindType<K> = K extends (...args: never[]) => unknown ? ReturnType<K> : K;
@@ -73,6 +79,18 @@ export class SinosError extends Error {
           `values of type ${this.errorKind.leftType.name} and ` +
           this.errorKind.rightType.name
         );
+
+      case "letTypeMismatch":
+        return (
+          `Declared type ${this.errorKind.declared.name} for declaration ` +
+          `doesn't match inferred type ${this.errorKind.inferred.name}`
+        );
+
+      case "unknownType":
+        return `Cannot find type "${this.errorKind.typeName}"`;
+
+      case "unknownBinding":
+        return `Cannot find name "${this.errorKind.bindingName}"`;
     }
   }
 }
