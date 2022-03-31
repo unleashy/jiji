@@ -16,7 +16,7 @@ export class Lexer {
 
     this.source.startSpan();
 
-    return this.nextKeyword() || this.nextInteger() || this.nextSymbol();
+    return this.nextNameOrKeyword() || this.nextInteger() || this.nextSymbol();
   }
 
   private skipWhitespace(): void {
@@ -43,27 +43,34 @@ export class Lexer {
     }
   }
 
-  nextKeyword(): Token | undefined {
+  private nextNameOrKeyword(): Token | undefined {
+    function isNameStart(c: string): boolean {
+      return /^[A-Za-z_]$/.test(c);
+    }
+
+    function isNameContinue(c: string): boolean {
+      return /^[A-Za-z0-9_]$/.test(c);
+    }
+
     const c = this.source.peek();
+    if (c === undefined || !isNameStart(c)) return undefined;
+    this.source.nextWhile(isNameContinue);
+
+    const span = this.source.endSpan();
     const kind = (() => {
-      switch (c) {
-        case "t":
-          return this.source.match("true") ? kinds.true : undefined;
-
-        case "f":
-          return this.source.match("false") ? kinds.false : undefined;
-
-        default:
-          return undefined;
+      // prettier-ignore
+      switch (span.text) {
+        case "false": return kinds.false;
+        case "let": return kinds.let;
+        case "true": return kinds.true;
+        default: return kinds.name(span.text);
       }
     })();
 
-    if (kind) {
-      return new Token(kind, this.source.endSpan());
-    }
+    return new Token(kind, span);
   }
 
-  nextInteger(): Token | undefined {
+  private nextInteger(): Token | undefined {
     function isDigit(c: string) {
       return c >= "0" && c <= "9";
     }
@@ -74,16 +81,14 @@ export class Lexer {
 
     const c = this.source.peek();
     if (c === undefined || !isDigit(c)) return;
+    this.source.nextWhile(isDigitOrUnderscore);
 
-    const charsConsumed = this.source.nextWhile(isDigitOrUnderscore);
-    if (charsConsumed > 0) {
-      const span = this.source.endSpan();
-      const value = Number.parseInt(span.text.replaceAll("_", ""), 10);
-      return new Token(kinds.integer(value), span);
-    }
+    const span = this.source.endSpan();
+    const value = Number.parseInt(span.text.replaceAll("_", ""), 10);
+    return new Token(kinds.integer(value), span);
   }
 
-  nextSymbol(): Token {
+  private nextSymbol(): Token {
     const c = this.source.next();
     const kind = (() => {
       // prettier-ignore
@@ -98,7 +103,7 @@ export class Lexer {
         case ")": return kinds.parenClose;
 
         case "=":
-          return this.source.match("=") ? kinds.equals : kinds.end;
+          return this.source.match("=") ? kinds.equals : kinds.equal;
 
         case "!":
           return this.source.match("=") ? kinds.bangEquals : kinds.bang;
@@ -108,6 +113,9 @@ export class Lexer {
 
         case ">":
           return this.source.match("=") ? kinds.greaterEqual : kinds.greater;
+
+        case ":":
+          return kinds.colon;
 
         case undefined: return kinds.end;
 

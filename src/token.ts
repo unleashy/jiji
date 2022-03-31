@@ -10,9 +10,11 @@ export const kinds = Object.freeze({
   end: kind({ name: "end" }),
 
   integer: (value: number) => kind({ name: "integer", value }),
+  name: (value: string) => kind({ name: "name", value }),
 
-  true: kind({ name: "true" }),
   false: kind({ name: "false" }),
+  let: kind({ name: "let" }),
+  true: kind({ name: "true" }),
 
   semi: kind({ name: "semi" }),
   plus: kind({ name: "plus" }),
@@ -23,12 +25,14 @@ export const kinds = Object.freeze({
   parenOpen: kind({ name: "parenOpen" }),
   parenClose: kind({ name: "parenClose" }),
   bang: kind({ name: "bang" }),
+  equal: kind({ name: "equal" }),
   equals: kind({ name: "equals" }),
   bangEquals: kind({ name: "bangEquals" }),
   less: kind({ name: "less" }),
   lessEqual: kind({ name: "lessEqual" }),
   greater: kind({ name: "greater" }),
-  greaterEqual: kind({ name: "greaterEqual" })
+  greaterEqual: kind({ name: "greaterEqual" }),
+  colon: kind({ name: "colon" })
 });
 
 export type Kinds = typeof kinds;

@@ -39,7 +39,7 @@ const testCases: TestCase[] = [
   },
   {
     desc: "accepts all single-character symbols",
-    input: ";+-*/%()!<>",
+    input: ";+-*/%()!<>:=",
     output: s => [
       new Token(kinds.semi, s(0, 1)),
       new Token(kinds.plus, s(1, 1)),
@@ -52,7 +52,9 @@ const testCases: TestCase[] = [
       new Token(kinds.bang, s(8, 1)),
       new Token(kinds.less, s(9, 1)),
       new Token(kinds.greater, s(10, 1)),
-      new Token(kinds.end, s(11, 0))
+      new Token(kinds.colon, s(11, 1)),
+      new Token(kinds.equal, s(12, 1)),
+      new Token(kinds.end, s(13, 0))
     ]
   },
   {
@@ -77,12 +79,24 @@ const testCases: TestCase[] = [
     ]
   },
   {
-    desc: "accepts all keywords",
-    input: "true false",
+    desc: "accepts names",
+    input: "_ A B1__2C__ abcdefghijklmnopqrstuvwxyz0123456789",
     output: s => [
-      new Token(kinds.true, s(0, 4)),
-      new Token(kinds.false, s(5, 5)),
-      new Token(kinds.end, s(10, 0))
+      new Token(kinds.name("_"), s(0, 1)),
+      new Token(kinds.name("A"), s(2, 1)),
+      new Token(kinds.name("B1__2C__"), s(4, 8)),
+      new Token(kinds.name("abcdefghijklmnopqrstuvwxyz0123456789"), s(13, 36)),
+      new Token(kinds.end, s(49, 0))
+    ]
+  },
+  {
+    desc: "accepts all keywords",
+    input: "false let true",
+    output: s => [
+      new Token(kinds.false, s(0, 5)),
+      new Token(kinds.let, s(6, 3)),
+      new Token(kinds.true, s(10, 4)),
+      new Token(kinds.end, s(14, 0))
     ]
   }
 ];
