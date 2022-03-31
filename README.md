@@ -1,6 +1,15 @@
 # sinos
 
-small programming language
+small programming language that compiles to JS
+
+## todo list
+
+- [ ] variables (with and without type inference)
+- [ ] functions
+- [ ] conditionals
+- [ ] loops (tail call elimination?)
+- [ ] more primitive types (float, string)
+- [ ] composite types (tuples, records, variants)
 
 ## grammar
 
