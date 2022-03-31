@@ -39,6 +39,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["c8", "npm:7.11.0"],\
             ["parcel", "npm:2.4.0"],\
             ["prettier", "npm:2.6.0"],\
+            ["sade", "npm:1.8.1"],\
             ["ts-dedent", "npm:2.2.0"],\
             ["ts-node", "virtual:a3a553be574fa67c9ad186ff5b538624a3ce363fe5ac33fdfa07b5739520b04596e4dec2f633aa497faa2974b45345a3861fa75046d49f62d4b9550d1393ecb6#npm:10.7.0"],\
             ["typescript", "patch:typescript@npm%3A4.6.2#~builtin<compat/typescript>::version=4.6.2&hash=bda367"],\
@@ -3157,6 +3158,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["c8", "npm:7.11.0"],\
             ["parcel", "npm:2.4.0"],\
             ["prettier", "npm:2.6.0"],\
+            ["sade", "npm:1.8.1"],\
             ["ts-dedent", "npm:2.2.0"],\
             ["ts-node", "virtual:a3a553be574fa67c9ad186ff5b538624a3ce363fe5ac33fdfa07b5739520b04596e4dec2f633aa497faa2974b45345a3861fa75046d49f62d4b9550d1393ecb6#npm:10.7.0"],\
             ["typescript", "patch:typescript@npm%3A4.6.2#~builtin<compat/typescript>::version=4.6.2&hash=bda367"],\
