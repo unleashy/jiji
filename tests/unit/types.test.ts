@@ -54,6 +54,14 @@ test("the type of a boolean is Bool", () => {
   assert.equal(falseType, types.Bool);
 });
 
+test("the type of a group is the type of its expression", () => {
+  const sut = new Types();
+
+  const type = sut.compute(ast.group(ast.integer(1, span), span));
+
+  assert.equal(type, types.Int);
+});
+
 test("the type of negating an integer is Int", () => {
   const sut = new Types();
 

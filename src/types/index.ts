@@ -92,6 +92,9 @@ export class Types {
         }
       }
 
+      case "group":
+        return this.compute(ast.expr);
+
       case "integer":
         return types.Int;
 

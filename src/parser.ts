@@ -165,7 +165,7 @@ export class Parser {
           "parenClose",
           badToken => new SinosError(errorKinds.expectCloseParen, badToken.span)
         );
-        return { ...expr, span: token.span.join(close.span) };
+        return ast.group(expr, token.span.join(close.span));
     }
 
     throw new SinosError(errorKinds.expectExpr, token.span);

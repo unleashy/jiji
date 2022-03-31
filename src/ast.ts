@@ -17,7 +17,7 @@ export interface AstExprStmt extends AstCommon<"exprStmt"> {
   expr: AstExpr;
 }
 
-export type AstExpr = AstBinary | AstUnary | AstInteger | AstBoolean;
+export type AstExpr = AstBinary | AstUnary | AstGroup | AstInteger | AstBoolean;
 
 export type BinaryOp =
   | "=="
@@ -42,6 +42,10 @@ export type UnaryOp = "-" | "+" | "!";
 
 export interface AstUnary extends AstCommon<"unary"> {
   op: UnaryOp;
+  expr: AstExpr;
+}
+
+export interface AstGroup extends AstCommon<"group"> {
   expr: AstExpr;
 }
 
@@ -82,6 +86,12 @@ export const ast = {
   unary: (op: UnaryOp, expr: AstExpr, span: Span): AstUnary => ({
     kind: "unary",
     op,
+    expr,
+    span
+  }),
+
+  group: (expr: AstExpr, span: Span): AstGroup => ({
+    kind: "group",
     expr,
     span
   }),

@@ -163,9 +163,10 @@ const testCases: TestCase[] = [
     output: `
       module<0,8>
         exprStmt<0,8>
-          binary<0,7> +
-            integer<1,1> 1
-            integer<5,1> 2
+          group<0,7>
+            binary<1,5> +
+              integer<1,1> 1
+              integer<5,1> 2
     `
   },
   {
@@ -286,6 +287,12 @@ function printAst(ast: Ast): string {
       result += ` ${ast.op}\n${expr}`;
       break;
     }
+
+    case "group":
+      const expr = indented(printAst(ast.expr));
+
+      result += `\n${expr}`;
+      break;
 
     case "integer":
     case "boolean": {
