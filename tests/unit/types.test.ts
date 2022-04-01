@@ -3,7 +3,8 @@ import * as assert from "uvu/assert";
 import { File } from "../../src/file";
 import { Span } from "../../src/span";
 import { SinosError, errorKinds } from "../../src/error";
-import { BinaryOp, ast } from "../../src/ast";
+import { BinaryOp } from "../../src/ast";
+import { useSpanForBuildingAst } from "../util";
 import { Types, types } from "../../src/types";
 
 function catchErr<T>(fn: () => T): T | SinosError {
@@ -19,11 +20,12 @@ function catchErr<T>(fn: () => T): T | SinosError {
 }
 
 const span = new Span(new File("<test>", ""), 0, 0);
+const ast = useSpanForBuildingAst(span);
 
 test("the type of a module is Unit", () => {
   const sut = new Types();
 
-  const type = sut.typeOf(ast.module([], span));
+  const type = sut.typeOf(ast.module([]));
 
   assert.equal(type, types.Unit);
 });
@@ -31,7 +33,7 @@ test("the type of a module is Unit", () => {
 test("the type of a statement is Unit", () => {
   const sut = new Types();
 
-  const type = sut.typeOf(ast.exprStmt(ast.integer(0, span), span));
+  const type = sut.typeOf(ast.exprStmt(ast.integer(0)));
 
   assert.equal(type, types.Unit);
 });
@@ -39,7 +41,7 @@ test("the type of a statement is Unit", () => {
 test("the type of an integer is Int", () => {
   const sut = new Types();
 
-  const type = sut.typeOf(ast.integer(123, span));
+  const type = sut.typeOf(ast.integer(123));
 
   assert.equal(type, types.Int);
 });
@@ -47,8 +49,8 @@ test("the type of an integer is Int", () => {
 test("the type of a boolean is Bool", () => {
   const sut = new Types();
 
-  const trueType = sut.typeOf(ast.boolean(true, span));
-  const falseType = sut.typeOf(ast.boolean(false, span));
+  const trueType = sut.typeOf(ast.boolean(true));
+  const falseType = sut.typeOf(ast.boolean(false));
 
   assert.equal(trueType, types.Bool);
   assert.equal(falseType, types.Bool);
@@ -57,7 +59,7 @@ test("the type of a boolean is Bool", () => {
 test("the type of a group is the type of its expression", () => {
   const sut = new Types();
 
-  const type = sut.typeOf(ast.group(ast.integer(1, span), span));
+  const type = sut.typeOf(ast.group(ast.integer(1)));
 
   assert.equal(type, types.Int);
 });
@@ -65,7 +67,7 @@ test("the type of a group is the type of its expression", () => {
 test("the type of negating an integer is Int", () => {
   const sut = new Types();
 
-  const type = sut.typeOf(ast.unary("-", ast.integer(123, span), span));
+  const type = sut.typeOf(ast.unary("-", ast.integer(123)));
 
   assert.equal(type, types.Int);
 });
@@ -73,7 +75,7 @@ test("the type of negating an integer is Int", () => {
 test("the type of plussing an integer is Int", () => {
   const sut = new Types();
 
-  const type = sut.typeOf(ast.unary("+", ast.integer(123, span), span));
+  const type = sut.typeOf(ast.unary("+", ast.integer(123)));
 
   assert.equal(type, types.Int);
 });
@@ -81,9 +83,7 @@ test("the type of plussing an integer is Int", () => {
 test("negating a boolean is an error", () => {
   const sut = new Types();
 
-  const err = catchErr(() =>
-    sut.typeOf(ast.unary("-", ast.boolean(true, span), span))
-  );
+  const err = catchErr(() => sut.typeOf(ast.unary("-", ast.boolean(true))));
 
   assert.equal(
     err,
@@ -94,9 +94,7 @@ test("negating a boolean is an error", () => {
 test("plussing a boolean is an error", () => {
   const sut = new Types();
 
-  const err = catchErr(() =>
-    sut.typeOf(ast.unary("+", ast.boolean(false, span), span))
-  );
+  const err = catchErr(() => sut.typeOf(ast.unary("+", ast.boolean(false))));
 
   assert.equal(
     err,
@@ -107,7 +105,7 @@ test("plussing a boolean is an error", () => {
 test("the type of not-ing a boolean is Bool", () => {
   const sut = new Types();
 
-  const type = sut.typeOf(ast.unary("!", ast.boolean(true, span), span));
+  const type = sut.typeOf(ast.unary("!", ast.boolean(true)));
 
   assert.equal(type, types.Bool);
 });
@@ -115,9 +113,7 @@ test("the type of not-ing a boolean is Bool", () => {
 test("not-ing an integer is an error", () => {
   const sut = new Types();
 
-  const err = catchErr(() =>
-    sut.typeOf(ast.unary("!", ast.integer(0, span), span))
-  );
+  const err = catchErr(() => sut.typeOf(ast.unary("!", ast.integer(0))));
 
   assert.equal(
     err,
@@ -130,9 +126,7 @@ test("the type of arithmetic with two integers is Int", () => {
 
   const ops: BinaryOp[] = ["+", "-", "*", "/", "%"];
   const opTypes = ops.map(op =>
-    sut.typeOf(
-      ast.binary(ast.integer(123, span), op, ast.integer(123, span), span)
-    )
+    sut.typeOf(ast.binary(ast.integer(123), op, ast.integer(123)))
   );
 
   assert.equal(
@@ -147,9 +141,7 @@ test("arithmetic with non-Int is an error", () => {
   const ops: BinaryOp[] = ["+", "-", "*", "/", "%"];
   const errors = ops.map(op =>
     catchErr(() =>
-      sut.typeOf(
-        ast.binary(ast.boolean(true, span), op, ast.boolean(false, span), span)
-      )
+      sut.typeOf(ast.binary(ast.boolean(true), op, ast.boolean(false)))
     )
   );
 
@@ -170,9 +162,7 @@ test("the type of comparisons is Bool", () => {
 
   const ops: BinaryOp[] = ["==", "!=", "<", "<=", ">", ">="];
   const opTypes = ops.map(op =>
-    sut.typeOf(
-      ast.binary(ast.integer(123, span), op, ast.integer(123, span), span)
-    )
+    sut.typeOf(ast.binary(ast.integer(123), op, ast.integer(123)))
   );
 
   assert.equal(
@@ -187,9 +177,7 @@ test("comparing different types for equality is an error", () => {
   const ops: BinaryOp[] = ["==", "!="];
   const errors = ops.map(op =>
     catchErr(() =>
-      sut.typeOf(
-        ast.binary(ast.integer(123, span), op, ast.boolean(true, span), span)
-      )
+      sut.typeOf(ast.binary(ast.integer(123), op, ast.boolean(true)))
     )
   );
 
@@ -211,9 +199,7 @@ test("comparing non-Ints for order is an error", () => {
   const ops: BinaryOp[] = ["<", "<=", ">", ">="];
   const errors = ops.map(op =>
     catchErr(() =>
-      sut.typeOf(
-        ast.binary(ast.boolean(true, span), op, ast.boolean(true, span), span)
-      )
+      sut.typeOf(ast.binary(ast.boolean(true), op, ast.boolean(true)))
     )
   );
 
@@ -234,21 +220,12 @@ test("typechecking is done as deeply as possible", () => {
 
   const error = catchErr(() =>
     sut.typeOf(
-      ast.module(
-        [
-          ast.exprStmt(ast.unary("-", ast.integer(123, span), span), span),
-          ast.exprStmt(
-            ast.binary(
-              ast.integer(1, span),
-              "+",
-              ast.unary("!", ast.boolean(false, span), span),
-              span
-            ),
-            span
-          )
-        ],
-        span
-      )
+      ast.module([
+        ast.exprStmt(ast.unary("-", ast.integer(123))),
+        ast.exprStmt(
+          ast.binary(ast.integer(1), "+", ast.unary("!", ast.boolean(false)))
+        )
+      ])
     )
   );
 
@@ -264,7 +241,7 @@ test("typechecking is done as deeply as possible", () => {
 test("the type of a let statement is inferred", () => {
   const sut = new Types();
 
-  sut.typeOf(ast.letStmt("a", undefined, ast.integer(1, span), span));
+  sut.typeOf(ast.letStmt("a", undefined, ast.integer(1)));
 
   assert.equal(sut.typeOfBinding("a"), types.Int);
 });
@@ -272,7 +249,7 @@ test("the type of a let statement is inferred", () => {
 test("there is no type for a nonexistent binding", () => {
   const sut = new Types();
 
-  sut.typeOf(ast.letStmt("b", undefined, ast.integer(1, span), span));
+  sut.typeOf(ast.letStmt("b", undefined, ast.integer(1)));
 
   assert.equal(sut.typeOfBinding("a"), undefined);
 });
@@ -280,12 +257,12 @@ test("there is no type for a nonexistent binding", () => {
 test("the ascribed type of a let statement is checked against its inferred type", () => {
   const sut = new Types();
 
-  sut.typeOf(ast.letStmt("a", "Bool", ast.boolean(true, span), span));
+  sut.typeOf(ast.letStmt("a", "Bool", ast.boolean(true)));
 
   assert.equal(sut.typeOfBinding("a"), types.Bool);
 
   const error = catchErr(() =>
-    sut.typeOf(ast.letStmt("b", "Int", ast.boolean(false, span), span))
+    sut.typeOf(ast.letStmt("b", "Int", ast.boolean(false)))
   );
 
   assert.equal(
@@ -298,7 +275,7 @@ test("the ascribed type of a let statement must exist", () => {
   const sut = new Types();
 
   const error = catchErr(() =>
-    sut.typeOf(ast.letStmt("a", "Unpossible", ast.boolean(true, span), span))
+    sut.typeOf(ast.letStmt("a", "Unpossible", ast.boolean(true)))
   );
 
   assert.equal(
@@ -314,17 +291,13 @@ test("the type of a binding is its previously declared type", () => {
   // int [1]
   const result = catchErr(() =>
     sut.typeOf(
-      ast.module(
-        [
-          ast.letStmt("a", "Int", ast.integer(1, span), span),
-          ast.exprStmt(
-            // [1]
-            ast.binary(ast.name("a", span), "==", ast.integer(1, span), span),
-            span
-          )
-        ],
-        span
-      )
+      ast.module([
+        ast.letStmt("a", "Int", ast.integer(1)),
+        ast.exprStmt(
+          // [1]
+          ast.binary(ast.name("a"), "==", ast.integer(1))
+        )
+      ])
     )
   );
 
@@ -336,13 +309,10 @@ test("errors on undeclared binding", () => {
 
   const error = catchErr(() =>
     sut.typeOf(
-      ast.module(
-        [
-          ast.exprStmt(ast.name("a", span), span),
-          ast.letStmt("a", undefined, ast.boolean(true, span), span)
-        ],
-        span
-      )
+      ast.module([
+        ast.exprStmt(ast.name("a")),
+        ast.letStmt("a", undefined, ast.boolean(true))
+      ])
     )
   );
 
@@ -353,13 +323,10 @@ test("bindings are allowed to shadow", () => {
   const sut = new Types();
 
   sut.typeOf(
-    ast.module(
-      [
-        ast.letStmt("a", undefined, ast.boolean(true, span), span),
-        ast.letStmt("a", undefined, ast.integer(123, span), span)
-      ],
-      span
-    )
+    ast.module([
+      ast.letStmt("a", undefined, ast.boolean(true)),
+      ast.letStmt("a", undefined, ast.integer(123))
+    ])
   );
 
   assert.equal(sut.typeOfBinding("a"), types.Int);

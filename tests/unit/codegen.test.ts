@@ -2,7 +2,7 @@ import { test } from "uvu";
 import * as assert from "uvu/assert";
 import { File } from "../../src/file";
 import { Span } from "../../src/span";
-import { BinaryOp, ast } from "../../src/ast";
+import { useSpanForBuildingAst } from "../util";
 import { Codegen } from "../../src/codegen";
 
 function exec(code: string): string[] {
@@ -19,11 +19,12 @@ function exec(code: string): string[] {
 }
 
 const span = new Span(new File("<test>", ""), 0, 0);
+const ast = useSpanForBuildingAst(span);
 
 test("nothing happens for an effectively empty AST", () => {
   const sut = new Codegen();
 
-  const result = sut.generate(ast.module([], span));
+  const result = sut.generate(ast.module([]));
 
   assert.equal(exec(result), []);
 });
@@ -32,41 +33,28 @@ test("expression statements get logged", () => {
   const sut = new Codegen();
 
   const result = sut.generate(
-    ast.module(
-      [
-        ast.exprStmt(ast.integer(42, span), span),
-        ast.exprStmt(ast.boolean(true, span), span),
-        ast.exprStmt(ast.unary("!", ast.boolean(true, span), span), span),
-        ast.exprStmt(ast.unary("-", ast.integer(999, span), span), span),
-        ast.exprStmt(ast.unary("+", ast.integer(50, span), span), span),
-        ast.exprStmt(
-          ast.binary(ast.integer(1, span), "+", ast.integer(2, span), span),
-          span
-        ),
-        ast.exprStmt(
-          ast.binary(
-            ast.binary(ast.integer(50, span), "*", ast.integer(50, span), span),
-            "==",
-            ast.integer(2500, span),
-            span
-          ),
-          span
-        ),
-        ast.exprStmt(
-          ast.binary(
-            ast.group(
-              ast.binary(ast.integer(1, span), "+", ast.integer(2, span), span),
-              span
-            ),
-            "*",
-            ast.integer(3, span),
-            span
-          ),
-          span
+    ast.module([
+      ast.exprStmt(ast.integer(42)),
+      ast.exprStmt(ast.boolean(true)),
+      ast.exprStmt(ast.unary("!", ast.boolean(true))),
+      ast.exprStmt(ast.unary("-", ast.integer(999))),
+      ast.exprStmt(ast.unary("+", ast.integer(50))),
+      ast.exprStmt(ast.binary(ast.integer(1), "+", ast.integer(2))),
+      ast.exprStmt(
+        ast.binary(
+          ast.binary(ast.integer(50), "*", ast.integer(50)),
+          "==",
+          ast.integer(2500)
         )
-      ],
-      span
-    )
+      ),
+      ast.exprStmt(
+        ast.binary(
+          ast.group(ast.binary(ast.integer(1), "+", ast.integer(2))),
+          "*",
+          ast.integer(3)
+        )
+      )
+    ])
   );
 
   assert.equal(exec(result), [
@@ -85,13 +73,10 @@ test("variables work", () => {
   const sut = new Codegen();
 
   const result = sut.generate(
-    ast.module(
-      [
-        ast.letStmt("a", undefined, ast.integer(999, span), span),
-        ast.exprStmt(ast.name("a", span), span)
-      ],
-      span
-    )
+    ast.module([
+      ast.letStmt("a", undefined, ast.integer(999)),
+      ast.exprStmt(ast.name("a"))
+    ])
   );
 
   assert.equal(exec(result), ["999"]);
@@ -101,15 +86,12 @@ test("shadowed variables work", () => {
   const sut = new Codegen();
 
   const result = sut.generate(
-    ast.module(
-      [
-        ast.letStmt("a", undefined, ast.integer(42, span), span),
-        ast.exprStmt(ast.name("a", span), span),
-        ast.letStmt("a", undefined, ast.boolean(false, span), span),
-        ast.exprStmt(ast.name("a", span), span)
-      ],
-      span
-    )
+    ast.module([
+      ast.letStmt("a", undefined, ast.integer(42)),
+      ast.exprStmt(ast.name("a")),
+      ast.letStmt("a", undefined, ast.boolean(false)),
+      ast.exprStmt(ast.name("a"))
+    ])
   );
 
   assert.equal(exec(result), ["42", "false"]);
