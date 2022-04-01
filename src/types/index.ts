@@ -1,6 +1,6 @@
 import { errorKinds, SinosError } from "../error";
 import { Type } from "./common";
-import { Bool, Int, Unit } from "./primitives";
+import { Bool, Int, Float, Unit } from "./primitives";
 import {
   Ast,
   AstBinary,
@@ -16,6 +16,7 @@ export * from "./common";
 export const types = {
   Unit: new Unit(),
   Int: new Int(),
+  Float: new Float(),
   Bool: new Bool()
 };
 
@@ -47,6 +48,9 @@ export class Types {
 
       case "integer":
         return types.Int;
+
+      case "float":
+        return types.Float;
 
       case "boolean":
         return types.Bool;
@@ -106,7 +110,7 @@ export class Types {
       case "<=":
       case ">":
       case ">=":
-        if (!(leftType === types.Int && rightType === types.Int)) {
+        if (!leftType.isOrderableAgainst(rightType)) {
           throw new SinosError(
             errorKinds.binaryTypeMismatch(leftType, ast.op, rightType),
             ast.span
@@ -116,41 +120,29 @@ export class Types {
         return types.Bool;
 
       default:
-        if (!(leftType === types.Int && rightType === types.Int)) {
+        const result = leftType.applyArithmeticOp(ast.op, rightType);
+        if (result === undefined) {
           throw new SinosError(
             errorKinds.binaryTypeMismatch(leftType, ast.op, rightType),
             ast.span
           );
         }
 
-        return types.Int;
+        return result;
     }
   }
 
   private typeOfUnary(ast: AstUnary) {
     const exprType = this.typeOf(ast.expr);
-
-    switch (ast.op) {
-      case "!":
-        if (exprType !== types.Bool) {
-          throw new SinosError(
-            errorKinds.unaryTypeMismatch(ast.op, exprType),
-            ast.span
-          );
-        }
-
-        return types.Bool;
-
-      default:
-        if (exprType !== types.Int) {
-          throw new SinosError(
-            errorKinds.unaryTypeMismatch(ast.op, exprType),
-            ast.span
-          );
-        }
-
-        return types.Int;
+    const result = exprType.applyUnaryOp(ast.op);
+    if (result === undefined) {
+      throw new SinosError(
+        errorKinds.unaryTypeMismatch(ast.op, exprType),
+        ast.span
+      );
     }
+
+    return result;
   }
 
   private typeOfName(ast: AstName) {

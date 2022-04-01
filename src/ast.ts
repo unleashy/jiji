@@ -32,18 +32,9 @@ export type AstExpr =
   | AstFloat
   | AstBoolean;
 
-export type BinaryOp =
-  | "=="
-  | "!="
-  | "<"
-  | "<="
-  | ">"
-  | ">="
-  | "+"
-  | "-"
-  | "*"
-  | "/"
-  | "%";
+export type ArithmeticOp = "+" | "-" | "*" | "/" | "%";
+export type OrderingOp = "<" | "<=" | ">" | ">=";
+export type BinaryOp = "==" | "!=" | OrderingOp | ArithmeticOp;
 
 export interface AstBinary extends AstCommon<"binary"> {
   left: AstExpr;

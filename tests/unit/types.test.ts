@@ -3,9 +3,15 @@ import * as assert from "uvu/assert";
 import { File } from "../../src/file";
 import { Span } from "../../src/span";
 import { SinosError, errorKinds } from "../../src/error";
-import { BinaryOp } from "../../src/ast";
+import {
+  ArithmeticOp,
+  Ast,
+  AstExpr,
+  BinaryOp,
+  OrderingOp
+} from "../../src/ast";
 import { useSpanForBuildingAst } from "../util";
-import { Types, types } from "../../src/types";
+import { Type, Types, types } from "../../src/types";
 
 function catchErr<T>(fn: () => T): T | SinosError {
   try {
@@ -46,6 +52,14 @@ test("the type of an integer is Int", () => {
   assert.equal(type, types.Int);
 });
 
+test("the type of a float is Float", () => {
+  const sut = new Types();
+
+  const type = sut.typeOf(ast.float(3.14));
+
+  assert.equal(type, types.Float);
+});
+
 test("the type of a boolean is Bool", () => {
   const sut = new Types();
 
@@ -80,6 +94,22 @@ test("the type of plussing an integer is Int", () => {
   assert.equal(type, types.Int);
 });
 
+test("the type of negating a float is Float", () => {
+  const sut = new Types();
+
+  const type = sut.typeOf(ast.unary("-", ast.float(3.14)));
+
+  assert.equal(type, types.Float);
+});
+
+test("the type of plussing a float is Float", () => {
+  const sut = new Types();
+
+  const type = sut.typeOf(ast.unary("+", ast.float(3.14)));
+
+  assert.equal(type, types.Float);
+});
+
 test("negating a boolean is an error", () => {
   const sut = new Types();
 
@@ -110,21 +140,29 @@ test("the type of not-ing a boolean is Bool", () => {
   assert.equal(type, types.Bool);
 });
 
-test("not-ing an integer is an error", () => {
+test("not-ing a non-Bool is an error", () => {
   const sut = new Types();
 
-  const err = catchErr(() => sut.typeOf(ast.unary("!", ast.integer(0))));
+  const tys: [Type, AstExpr][] = [
+    [types.Int, ast.integer(0)],
+    [types.Float, ast.float(0)]
+  ];
+  const err = tys.map(([, node]) =>
+    catchErr(() => sut.typeOf(ast.unary("!", node)))
+  );
 
   assert.equal(
     err,
-    new SinosError(errorKinds.unaryTypeMismatch("!", types.Int), span)
+    tys.map(
+      ([ty]) => new SinosError(errorKinds.unaryTypeMismatch("!", ty), span)
+    )
   );
 });
 
 test("the type of arithmetic with two integers is Int", () => {
   const sut = new Types();
 
-  const ops: BinaryOp[] = ["+", "-", "*", "/", "%"];
+  const ops: ArithmeticOp[] = ["+", "-", "*", "/", "%"];
   const opTypes = ops.map(op =>
     sut.typeOf(ast.binary(ast.integer(123), op, ast.integer(123)))
   );
@@ -135,10 +173,24 @@ test("the type of arithmetic with two integers is Int", () => {
   );
 });
 
-test("arithmetic with non-Int is an error", () => {
+test("the type of arithmetic with two floats is Float", () => {
   const sut = new Types();
 
-  const ops: BinaryOp[] = ["+", "-", "*", "/", "%"];
+  const ops: ArithmeticOp[] = ["+", "-", "*", "/", "%"];
+  const opTypes = ops.map(op =>
+    sut.typeOf(ast.binary(ast.float(123), op, ast.float(123)))
+  );
+
+  assert.equal(
+    opTypes,
+    ops.map(() => types.Float)
+  );
+});
+
+test("arithmetic with non-Ints/Floats is an error", () => {
+  const sut = new Types();
+
+  const ops: ArithmeticOp[] = ["+", "-", "*", "/", "%"];
   const errors = ops.map(op =>
     catchErr(() =>
       sut.typeOf(ast.binary(ast.boolean(true), op, ast.boolean(false)))
@@ -157,12 +209,26 @@ test("arithmetic with non-Int is an error", () => {
   );
 });
 
-test("the type of comparisons is Bool", () => {
+test("the type of comparing ints is Bool", () => {
   const sut = new Types();
 
   const ops: BinaryOp[] = ["==", "!=", "<", "<=", ">", ">="];
   const opTypes = ops.map(op =>
     sut.typeOf(ast.binary(ast.integer(123), op, ast.integer(123)))
+  );
+
+  assert.equal(
+    opTypes,
+    ops.map(() => types.Bool)
+  );
+});
+
+test("the type of comparing floats is Bool", () => {
+  const sut = new Types();
+
+  const ops: BinaryOp[] = ["==", "!=", "<", "<=", ">", ">="];
+  const opTypes = ops.map(op =>
+    sut.typeOf(ast.binary(ast.float(123), op, ast.float(123)))
   );
 
   assert.equal(
@@ -193,10 +259,10 @@ test("comparing different types for equality is an error", () => {
   );
 });
 
-test("comparing non-Ints for order is an error", () => {
+test("comparing non-Ints/Floats for order is an error", () => {
   const sut = new Types();
 
-  const ops: BinaryOp[] = ["<", "<=", ">", ">="];
+  const ops: OrderingOp[] = ["<", "<=", ">", ">="];
   const errors = ops.map(op =>
     catchErr(() =>
       sut.typeOf(ast.binary(ast.boolean(true), op, ast.boolean(true)))
