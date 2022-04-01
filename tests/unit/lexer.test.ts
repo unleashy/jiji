@@ -79,6 +79,43 @@ const testCases: TestCase[] = [
     ]
   },
   {
+    desc: "accepts floats",
+    input:
+      "0.0 1234567890.1234 42_3__5_.98_7 1.0e5 52.3E9 100e10 8E4 90e-2 42E+3 70.2e-8 120.57E+3",
+    output: s => [
+      new Token(kinds.float(0.0), s(0, 3)),
+      new Token(kinds.float(1234567890.1234), s(4, 15)),
+      new Token(kinds.float(4235.987), s(20, 13)),
+      new Token(kinds.float(1.0e5), s(34, 5)),
+      new Token(kinds.float(52.3e9), s(40, 6)),
+      new Token(kinds.float(100e10), s(47, 6)),
+      new Token(kinds.float(8e4), s(54, 3)),
+      new Token(kinds.float(90e-2), s(58, 5)),
+      new Token(kinds.float(42e3), s(64, 5)),
+      new Token(kinds.float(70.2e-8), s(70, 7)),
+      new Token(kinds.float(120.57e3), s(78, 9)),
+      new Token(kinds.end, s(87, 0))
+    ]
+  },
+  {
+    desc: "fails on missing fractional part",
+    input: "123.",
+    output: s => [new SinosError(errorKinds.missingFrac, s(0, 4))],
+    expectError: true
+  },
+  {
+    desc: "fails on missing exponent part",
+    input: "456e -",
+    output: s => [new SinosError(errorKinds.missingExp, s(0, 4))],
+    expectError: true
+  },
+  {
+    desc: "fails on missing exponent part",
+    input: "789E-_",
+    output: s => [new SinosError(errorKinds.missingExp, s(0, 5))],
+    expectError: true
+  },
+  {
     desc: "accepts names",
     input: "_ A B1__2C__ abcdefghijklmnopqrstuvwxyz0123456789",
     output: s => [

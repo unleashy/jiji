@@ -9,8 +9,9 @@ function kind<Name extends string, Other>(
 export const kinds = Object.freeze({
   end: kind({ name: "end" }),
 
-  integer: (value: number) => kind({ name: "integer", value }),
   name: (value: string) => kind({ name: "name", value }),
+  integer: (value: number) => kind({ name: "integer", value }),
+  float: (value: number) => kind({ name: "float", value }),
 
   false: kind({ name: "false" }),
   let: kind({ name: "let" }),

@@ -16,7 +16,7 @@ export class Lexer {
 
     this.source.startSpan();
 
-    return this.nextNameOrKeyword() || this.nextInteger() || this.nextSymbol();
+    return this.nextNameOrKeyword() || this.nextNumber() || this.nextSymbol();
   }
 
   private skipWhitespace(): void {
@@ -70,7 +70,46 @@ export class Lexer {
     return new Token(kind, span);
   }
 
-  private nextInteger(): Token | undefined {
+  private nextNumber(): Token | undefined {
+    if (!this.consumeDigits()) return;
+
+    const float = this.nextFloat();
+    if (float) return float;
+
+    const span = this.source.endSpan();
+    const value = Number.parseInt(span.text.replaceAll("_", ""), 10);
+    return new Token(kinds.integer(value), span);
+  }
+
+  private nextFloat(): Token | undefined {
+    if (!this.isFloat()) {
+      return;
+    }
+
+    if (this.source.match(".")) {
+      if (!this.consumeDigits()) {
+        throw new SinosError(errorKinds.missingFrac, this.source.endSpan());
+      }
+    }
+
+    if (this.source.match("e") || this.source.match("E")) {
+      this.source.match("-") || this.source.match("+");
+      if (!this.consumeDigits()) {
+        throw new SinosError(errorKinds.missingExp, this.source.endSpan());
+      }
+    }
+
+    const span = this.source.endSpan();
+    const value = Number.parseFloat(span.text.replaceAll("_", ""));
+    return new Token(kinds.float(value), span);
+  }
+
+  private isFloat(): boolean {
+    const c = this.source.peek();
+    return c === "." || c === "e" || c === "E";
+  }
+
+  private consumeDigits(): boolean {
     function isDigit(c: string) {
       return c >= "0" && c <= "9";
     }
@@ -80,12 +119,10 @@ export class Lexer {
     }
 
     const c = this.source.peek();
-    if (c === undefined || !isDigit(c)) return;
+    if (c === undefined || !isDigit(c)) return false;
     this.source.nextWhile(isDigitOrUnderscore);
 
-    const span = this.source.endSpan();
-    const value = Number.parseInt(span.text.replaceAll("_", ""), 10);
-    return new Token(kinds.integer(value), span);
+    return true;
   }
 
   private nextSymbol(): Token {

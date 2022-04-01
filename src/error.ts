@@ -11,6 +11,8 @@ function errorKind<Name extends string, Other>(
 export const errorKinds = Object.freeze({
   // lexer errors
   unknownChar: (char: string) => errorKind({ name: "unknownChar", char }),
+  missingFrac: errorKind({ name: "missingFrac" }),
+  missingExp: errorKind({ name: "missingExp" }),
 
   // parser errors
   expectExpr: errorKind({ name: "expectExpr" }),
@@ -51,6 +53,12 @@ export class SinosError extends Error {
         const char = JSON.stringify(this.errorKind.char);
         return `Unknown character ${char}`;
       }
+
+      case "missingFrac":
+        return `Expected digits after "." for float literal`;
+
+      case "missingExp":
+        return `Expected digits for the exponent of a float literal`;
 
       case "expectSemi":
         return "Missing semicolon";
