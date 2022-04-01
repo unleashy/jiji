@@ -81,4 +81,38 @@ test("expression statements get logged", () => {
   ]);
 });
 
+test("variables work", () => {
+  const sut = new Codegen();
+
+  const result = sut.generate(
+    ast.module(
+      [
+        ast.letStmt("a", undefined, ast.integer(999, span), span),
+        ast.exprStmt(ast.name("a", span), span)
+      ],
+      span
+    )
+  );
+
+  assert.equal(exec(result), ["999"]);
+});
+
+test("shadowed variables work", () => {
+  const sut = new Codegen();
+
+  const result = sut.generate(
+    ast.module(
+      [
+        ast.letStmt("a", undefined, ast.integer(42, span), span),
+        ast.exprStmt(ast.name("a", span), span),
+        ast.letStmt("a", undefined, ast.boolean(false, span), span),
+        ast.exprStmt(ast.name("a", span), span)
+      ],
+      span
+    )
+  );
+
+  assert.equal(exec(result), ["42", "false"]);
+});
+
 test.run();

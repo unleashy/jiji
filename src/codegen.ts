@@ -1,8 +1,10 @@
 import { AstExpr, AstModule, AstStmt } from "./ast";
 
 export class Codegen {
+  private bindings = new Set<string>();
+
   generate(ast: AstModule): string {
-    let result = '"use strict";\n\n';
+    let result = '"use strict";';
 
     for (const stmt of ast.stmts) {
       result += this.genStmt(stmt);
@@ -12,15 +14,20 @@ export class Codegen {
   }
 
   private genStmt(stmt: AstStmt): string {
-    let result = "console.log(";
-
     switch (stmt.kind) {
-      case "exprStmt":
-        result += this.genExpr(stmt.expr);
-        break;
-    }
+      case "letStmt": {
+        const expr = this.genExpr(stmt.value);
+        if (this.bindings.has(stmt.name)) {
+          return `${stmt.name} = ${expr};`;
+        } else {
+          this.bindings.add(stmt.name);
+          return `let ${stmt.name} = ${expr};`;
+        }
+      }
 
-    return result + ");\n";
+      case "exprStmt":
+        return `console.log(${this.genExpr(stmt.expr)});`;
+    }
   }
 
   private genExpr(expr: AstExpr): string {
@@ -46,6 +53,7 @@ export class Codegen {
       case "group":
         return `(${this.genExpr(expr.expr)})`;
 
+      case "name":
       case "integer":
       case "boolean":
         return String(expr.value);
