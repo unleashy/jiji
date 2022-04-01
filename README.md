@@ -6,7 +6,7 @@ small programming language that compiles to JS
 
 - [x] variables (with and without type inference)
 - [~] more primitive types
-  - [~] float
+  - [x] float
   - [ ] string
 - [ ] string concatenation
 - [ ] hex int literal
