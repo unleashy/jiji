@@ -22,8 +22,19 @@ export const types = {
 
 export class Types {
   private bindings = new Map<string, Type>();
+  private typeOfCache = new WeakMap<Ast, Type>();
 
   typeOf(ast: Ast): Type {
+    let result = this.typeOfCache.get(ast);
+    if (result === undefined) {
+      result = this.typeOfImpl(ast);
+      this.typeOfCache.set(ast, result);
+    }
+
+    return result;
+  }
+
+  private typeOfImpl(ast: Ast): Type {
     switch (ast.kind) {
       case "module":
         return this.typeOfModule(ast);

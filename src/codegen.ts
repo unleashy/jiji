@@ -55,6 +55,7 @@ export class Codegen {
 
       case "name":
       case "integer":
+      case "float":
       case "boolean":
         return String(expr.value);
     }

@@ -35,6 +35,7 @@ test("expression statements get logged", () => {
   const result = sut.generate(
     ast.module([
       ast.exprStmt(ast.integer(42)),
+      ast.exprStmt(ast.float(3.1415)),
       ast.exprStmt(ast.boolean(true)),
       ast.exprStmt(ast.unary("!", ast.boolean(true))),
       ast.exprStmt(ast.unary("-", ast.integer(999))),
@@ -59,6 +60,7 @@ test("expression statements get logged", () => {
 
   assert.equal(exec(result), [
     "42",
+    "3.1415",
     "true",
     "false",
     "-999",
