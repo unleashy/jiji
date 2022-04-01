@@ -199,6 +199,9 @@ export class Parser {
       case "integer":
         return ast.integer(token.kind.value, token.span);
 
+      case "float":
+        return ast.float(token.kind.value, token.span);
+
       case "parenOpen":
         const expr = this.expr();
         const close = this.expectKind(

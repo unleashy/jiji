@@ -29,6 +29,7 @@ export type AstExpr =
   | AstGroup
   | AstName
   | AstInteger
+  | AstFloat
   | AstBoolean;
 
 export type BinaryOp =
@@ -66,6 +67,10 @@ export interface AstName extends AstCommon<"name"> {
 }
 
 export interface AstInteger extends AstCommon<"integer"> {
+  value: number;
+}
+
+export interface AstFloat extends AstCommon<"float"> {
   value: number;
 }
 
@@ -133,6 +138,12 @@ export const ast = {
 
   integer: (value: number, span: Span): AstInteger => ({
     kind: "integer",
+    value,
+    span
+  }),
+
+  float: (value: number, span: Span): AstFloat => ({
+    kind: "float",
     value,
     span
   }),

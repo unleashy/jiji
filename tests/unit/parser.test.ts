@@ -43,6 +43,15 @@ const testCases: TestCase[] = [
     `
   },
   {
+    desc: "accepts a single float",
+    input: "3.14159;",
+    output: `
+      module<0,8>
+        exprStmt<0,8>
+          float<0,7> 3.14159
+    `
+  },
+  {
     desc: "accepts a true boolean",
     input: "true;",
     output: `
@@ -359,6 +368,7 @@ function printAst(ast: Ast): string {
 
     case "name":
     case "integer":
+    case "float":
     case "boolean": {
       result += ` ${ast.value}`;
       break;
