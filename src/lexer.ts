@@ -16,7 +16,12 @@ export class Lexer {
 
     this.source.startSpan();
 
-    return this.nextNameOrKeyword() || this.nextNumber() || this.nextSymbol();
+    return (
+      this.nextNameOrKeyword() ||
+      this.nextNumber() ||
+      this.nextString() ||
+      this.nextSymbol()
+    );
   }
 
   private skipWhitespace(): void {
@@ -123,6 +128,117 @@ export class Lexer {
     this.source.nextWhile(isDigitOrUnderscore);
 
     return true;
+  }
+
+  private nextString(): Token | undefined {
+    if (this.source.match("'")) {
+      return this.nextSingleQuotedString();
+    } else if (this.source.match('"')) {
+      return this.nextDoubleQuotedString();
+    }
+  }
+
+  private nextSingleQuotedString(): Token {
+    this.source.nextWhile(c => c !== "'");
+
+    // skip '; if at end then fail
+    if (this.source.next() === undefined) {
+      throw new SinosError(errorKinds.unclosedString, this.source.endSpan());
+    }
+
+    const span = this.source.endSpan();
+    const textWithoutQuotes = span.text.slice(1, -1);
+    return new Token(kinds.string(textWithoutQuotes), span);
+  }
+
+  private nextDoubleQuotedString(): Token {
+    let text = "";
+
+    loop: while (true) {
+      if (this.source.hasMatch("\\")) {
+        this.source.startSpan(); // for escape error tracking
+
+        text += this.nextEscapeSeq();
+
+        this.source.endSpan(); // discard error tracking span
+      } else {
+        const c = this.source.next();
+        switch (c) {
+          case '"':
+            break loop;
+
+          case undefined:
+            throw new SinosError(
+              errorKinds.unclosedString,
+              this.source.endSpan()
+            );
+
+          default:
+            text += c;
+        }
+      }
+    }
+
+    const span = this.source.endSpan();
+    return new Token(kinds.string(text), span);
+  }
+
+  private nextEscapeSeq(): string {
+    this.source.next(); // skip backslash
+
+    const esc = this.source.next();
+    // prettier-ignore
+    switch (esc) {
+      case "b": return "\b";
+      case "f": return "\f";
+      case "r": return "\r";
+      case "n": return "\n";
+      case "t": return "\t";
+      case "v": return "\v";
+      case "'": return "'";
+      case '"': return '"';
+      case "\\": return "\\";
+      case "u": return this.nextUnicodeEscapeSeq();
+    }
+
+    throw new SinosError(
+      errorKinds.unknownEscape(esc ?? ""),
+      this.source.endSpan()
+    );
+  }
+
+  private nextUnicodeEscapeSeq(): string {
+    if (!this.source.match("{")) {
+      throw new SinosError(errorKinds.uniEscMissingOpen, this.source.endSpan());
+    }
+
+    let escapeText = "";
+    while (true) {
+      const c = this.source.next();
+      if (c === "}") {
+        break;
+      } else if (c === undefined) {
+        throw new SinosError(
+          errorKinds.uniEscMissingClose,
+          this.source.endSpan()
+        );
+      }
+
+      escapeText += c;
+    }
+
+    if (!/^[A-Fa-f0-9]+$/.test(escapeText)) {
+      throw new SinosError(errorKinds.uniEscNotHex, this.source.endSpan());
+    }
+
+    try {
+      return String.fromCodePoint(Number.parseInt(escapeText, 16));
+    } catch {
+      throw new SinosError(
+        errorKinds.uniEscInvalidCodePoint(escapeText),
+        this.source.endSpan()
+      );
+    }
   }
 
   private nextSymbol(): Token {

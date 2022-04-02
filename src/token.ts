@@ -12,6 +12,7 @@ export const kinds = Object.freeze({
   name: (value: string) => kind({ name: "name", value }),
   integer: (value: number) => kind({ name: "integer", value }),
   float: (value: number) => kind({ name: "float", value }),
+  string: (value: string) => kind({ name: "string", value }),
 
   false: kind({ name: "false" }),
   let: kind({ name: "let" }),

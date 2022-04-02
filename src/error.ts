@@ -13,6 +13,14 @@ export const errorKinds = Object.freeze({
   unknownChar: (char: string) => errorKind({ name: "unknownChar", char }),
   missingFrac: errorKind({ name: "missingFrac" }),
   missingExp: errorKind({ name: "missingExp" }),
+  unclosedString: errorKind({ name: "unclosedString" }),
+  unknownEscape: (escape: string) =>
+    errorKind({ name: "unknownEscape", escape }),
+  uniEscMissingOpen: errorKind({ name: "uniEscMissingOpen" }),
+  uniEscMissingClose: errorKind({ name: "uniEscMissingClose" }),
+  uniEscNotHex: errorKind({ name: "uniEscNotHex" }),
+  uniEscInvalidCodePoint: (codept: string) =>
+    errorKind({ name: "uniEscInvalidCodePoint", codept }),
 
   // parser errors
   expectExpr: errorKind({ name: "expectExpr" }),
@@ -59,6 +67,24 @@ export class SinosError extends Error {
 
       case "missingExp":
         return `Expected digits for the exponent of a float literal`;
+
+      case "unclosedString":
+        return `Unclosed string literal`;
+
+      case "unknownEscape":
+        return `Unknown escape sequence "\\${this.errorKind.escape}"`;
+
+      case "uniEscMissingOpen":
+        return `Expected an open brace "{" after '\\u' to start Unicode escape`;
+
+      case "uniEscMissingClose":
+        return `Expected a close brace "}" to finish Unicode escape`;
+
+      case "uniEscNotHex":
+        return `Invalid character in Unicode escape; only hexadecimal is allowed`;
+
+      case "uniEscInvalidCodePoint":
+        return `0x${this.errorKind.codept} is not a valid Unicode code point`;
 
       case "expectSemi":
         return "Missing semicolon";

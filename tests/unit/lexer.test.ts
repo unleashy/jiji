@@ -116,6 +116,87 @@ const testCases: TestCase[] = [
     expectError: true
   },
   {
+    desc: "accepts single-quoted strings",
+    input: String.raw`'' 'foobar' ' \n\r\t'`,
+    output: s => [
+      new Token(kinds.string(""), s(0, 2)),
+      new Token(kinds.string("foobar"), s(3, 8)),
+      new Token(kinds.string(String.raw` \n\r\t`), s(12, 9)),
+      new Token(kinds.end, s(21, 0))
+    ]
+  },
+  {
+    desc: "accepts double-quoted strings",
+    input: String.raw`"" "abcd" " \b\f\n\r\t\v\'\"\\"`,
+    output: s => [
+      new Token(kinds.string(""), s(0, 2)),
+      new Token(kinds.string("abcd"), s(3, 6)),
+      new Token(kinds.string(" \b\f\n\r\t\v'\"\\"), s(10, 21)),
+      new Token(kinds.end, s(31, 0))
+    ]
+  },
+  {
+    desc: "accepts unicode escapes in double-quoted strings",
+    input: String.raw`"\u{A}\u{41}\u{28B}\u{5763}\u{1042d}\u{10AeCf}"`,
+    output: s => [
+      new Token(
+        kinds.string(`\u{A}\u{41}\u{28B}\u{5763}\u{1042d}\u{10AeCf}`),
+        s(0, 47)
+      ),
+      new Token(kinds.end, s(47, 0))
+    ]
+  },
+  {
+    desc: "fails for unclosed single-quoted string",
+    input: `'aa`,
+    output: s => [new SinosError(errorKinds.unclosedString, s(0, 3))],
+    expectError: true
+  },
+  {
+    desc: "fails for unclosed double-quoted string",
+    input: `"  hey`,
+    output: s => [new SinosError(errorKinds.unclosedString, s(0, 6))],
+    expectError: true
+  },
+  {
+    desc: "fails for unknown escape sequence",
+    input: String.raw`"\m"`,
+    output: s => [new SinosError(errorKinds.unknownEscape("m"), s(1, 2))],
+    expectError: true
+  },
+  {
+    desc: "fails for end after escape sequence",
+    input: `"\\`,
+    output: s => [new SinosError(errorKinds.unknownEscape(""), s(1, 1))],
+    expectError: true
+  },
+  {
+    desc: "fails for missing open brace in unicode escapes",
+    input: `"\\u41}"`,
+    output: s => [new SinosError(errorKinds.uniEscMissingOpen, s(1, 2))],
+    expectError: true
+  },
+  {
+    desc: "fails for missing close brace in unicode escapes",
+    input: `"\\u{41 `,
+    output: s => [new SinosError(errorKinds.uniEscMissingClose, s(1, 6))],
+    expectError: true
+  },
+  {
+    desc: "fails for non-hex characters in unicode escapes",
+    input: `"\\u{abc-}"`,
+    output: s => [new SinosError(errorKinds.uniEscNotHex, s(1, 8))],
+    expectError: true
+  },
+  {
+    desc: "fails for invalid code points in unicode escapes",
+    input: `"\\u{FFFFFF}"`,
+    output: s => [
+      new SinosError(errorKinds.uniEscInvalidCodePoint("FFFFFF"), s(1, 10))
+    ],
+    expectError: true
+  },
+  {
     desc: "accepts names",
     input: "_ A B1__2C__ abcdefghijklmnopqrstuvwxyz0123456789",
     output: s => [
