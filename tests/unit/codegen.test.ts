@@ -3,6 +3,7 @@ import * as assert from "uvu/assert";
 import { File } from "../../src/file";
 import { Span } from "../../src/span";
 import { useSpanForBuildingAst } from "../util";
+import { Types } from "../../src/types";
 import { Codegen } from "../../src/codegen";
 
 function exec(code: string): string[] {
@@ -22,7 +23,7 @@ const span = new Span(new File("<test>", ""), 0, 0);
 const ast = useSpanForBuildingAst(span);
 
 test("nothing happens for an effectively empty AST", () => {
-  const sut = new Codegen();
+  const sut = new Codegen(new Types());
 
   const result = sut.generate(ast.module([]));
 
@@ -30,7 +31,7 @@ test("nothing happens for an effectively empty AST", () => {
 });
 
 test("expression statements get logged", () => {
-  const sut = new Codegen();
+  const sut = new Codegen(new Types());
 
   const result = sut.generate(
     ast.module([
@@ -72,7 +73,7 @@ test("expression statements get logged", () => {
 });
 
 test("variables work", () => {
-  const sut = new Codegen();
+  const sut = new Codegen(new Types());
 
   const result = sut.generate(
     ast.module([
@@ -85,7 +86,7 @@ test("variables work", () => {
 });
 
 test("shadowed variables work", () => {
-  const sut = new Codegen();
+  const sut = new Codegen(new Types());
 
   const result = sut.generate(
     ast.module([
@@ -97,6 +98,17 @@ test("shadowed variables work", () => {
   );
 
   assert.equal(exec(result), ["42", "false"]);
+});
+
+test("division of integers truncates", () => {
+  const sut = new Codegen(new Types());
+
+  const result = sut.generate(
+    ast.module([ast.exprStmt(ast.binary(ast.integer(1), "/", ast.integer(2)))])
+  );
+
+  console.log(result);
+  assert.equal(exec(result), ["0"]);
 });
 
 test.run();

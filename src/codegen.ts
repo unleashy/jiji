@@ -1,7 +1,14 @@
 import { AstExpr, AstModule, AstStmt } from "./ast";
+import { Types } from "./types";
+import { Int } from "./types/primitives";
 
 export class Codegen {
+  private types: Types;
   private bindings = new Set<string>();
+
+  constructor(types: Types) {
+    this.types = types;
+  }
 
   generate(ast: AstModule): string {
     let result = '"use strict";';
@@ -44,7 +51,12 @@ export class Codegen {
           }
         })();
 
-        return left + op + right;
+        const result = `${left} ${op} ${right}`;
+        if (op === "/" && this.types.typeOf(expr) instanceof Int) {
+          return `(${result}) | 0`;
+        } else {
+          return result;
+        }
       }
 
       case "unary":
