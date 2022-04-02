@@ -7,14 +7,15 @@ small programming language that compiles to JS
 - [x] variables (with and without type inference)
 - [~] more primitive types
   - [x] float
-  - [ ] string
+  - [~] string
 - [ ] string concatenation
 - [ ] hex int literal
 - [ ] block scopes
 - [ ] functions
-- [ ] conditionals
+- [ ] conditionals (if, unless)
 - [ ] loops (tail call elimination?)
 - [ ] composite types (tuples, records, variants)
+- [ ] pattern matching
 
 ## grammar
 
@@ -42,6 +43,7 @@ Primary ← "true"
         / Name
         / Integer
         / Float
+        / String
         / ParenOpen Expr ParenClose
 
 Name      ← NameStart NameCont*
@@ -55,6 +57,12 @@ Float    ← Integer FracPart? ExpPart
          / Integer FracPart
 FracPart ← "." Integer
 ExpPart  ← [Ee] [+-]? Integer
+
+String    ← "'" (!"'" .)* "'"
+          / '"' (EscapeSeq / !'"' .)* '"'
+EscapeSeq ← '\' [bfnrtv'"\\]
+          / '\u{' Hex{1,6} '}'
+Hex       ← [0-9A-Fa-f]
 
 # Space and Comment are always ignored
 Space   ← [ \t\r\n]+
