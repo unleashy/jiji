@@ -21,7 +21,8 @@ function compileImpl(file: File): string {
 
   const ast = parser.parse();
 
-  new Types().typeOf(ast);
+  const types = new Types();
+  types.typeOf(ast); // typecheck
 
-  return new Codegen().generate(ast);
+  return new Codegen(types).generate(ast);
 }
