@@ -267,8 +267,8 @@ export class Lexer {
         case ">":
           return this.source.match("=") ? kinds.greaterEqual : kinds.greater;
 
-        case ":":
-          return kinds.colon;
+        case ":": return kinds.colon;
+        case "~": return kinds.tilde;
 
         case undefined: return kinds.end;
 

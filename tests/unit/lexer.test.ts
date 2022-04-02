@@ -39,7 +39,7 @@ const testCases: TestCase[] = [
   },
   {
     desc: "accepts all single-character symbols",
-    input: ";+-*/%()!<>:=",
+    input: ";+-*/%()!<>:=~",
     output: s => [
       new Token(kinds.semi, s(0, 1)),
       new Token(kinds.plus, s(1, 1)),
@@ -54,7 +54,8 @@ const testCases: TestCase[] = [
       new Token(kinds.greater, s(10, 1)),
       new Token(kinds.colon, s(11, 1)),
       new Token(kinds.equal, s(12, 1)),
-      new Token(kinds.end, s(13, 0))
+      new Token(kinds.tilde, s(13, 1)),
+      new Token(kinds.end, s(14, 0))
     ]
   },
   {

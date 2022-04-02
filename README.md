@@ -8,7 +8,7 @@ small programming language that compiles to JS
 - [~] more primitive types
   - [x] float
   - [~] string
-- [ ] string concatenation
+- [~] string concatenation
 - [ ] hex int literal
 - [ ] block scopes
 - [ ] functions
@@ -32,7 +32,8 @@ ExprStmt ← Expr ";"
 
 Expr ← CmpExpr
 
-CmpExpr   ← AddExpr (("==" / "!=" / "<" / "<=" / ">" / ">=") AddExpr)?
+CmpExpr   ← CatExpr (("==" / "!=" / "<" / "<=" / ">" / ">=") CatExpr)?
+CatExpr   ← AddExpr ("~" CatExpr)*
 AddExpr   ← MulExpr (("+" / "-") MulExpr)*
 MulExpr   ← UnaryExpr (("*" / "/" / "%") UnaryExpr)*
 UnaryExpr ← ("-" / "+" / "!")? UnaryExpr

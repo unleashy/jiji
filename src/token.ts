@@ -34,7 +34,8 @@ export const kinds = Object.freeze({
   lessEqual: kind({ name: "lessEqual" }),
   greater: kind({ name: "greater" }),
   greaterEqual: kind({ name: "greaterEqual" }),
-  colon: kind({ name: "colon" })
+  colon: kind({ name: "colon" }),
+  tilde: kind({ name: "tilde" })
 });
 
 export type Kinds = typeof kinds;
