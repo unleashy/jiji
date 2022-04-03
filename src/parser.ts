@@ -103,10 +103,10 @@ enum Precedence {
   primary
 }
 
-interface ParseRule<K extends Kind> {
-  prefix?: (token: Token<K>) => AstExpr;
-  infix?: (left: AstExpr, token: Token) => AstExpr;
-  prec?: Precedence;
+type PrefixRule<K extends Kind> = (token: Token<K>) => AstExpr;
+interface InfixRule<K extends Kind> {
+  fn: (left: AstExpr, token: Token) => AstExpr;
+  prec: Precedence;
 }
 
 const kindToBinaryOp: Readonly<Partial<Record<keyof Kinds, BinaryOp>>> =
@@ -133,32 +133,35 @@ const kindToUnaryOp: Readonly<Partial<Record<keyof Kinds, UnaryOp>>> =
 
 class ExprParser {
   private readonly lexer: PeekableLexer;
-  private readonly rules = new Map<keyof Kinds, ParseRule<Kind>>();
+  private readonly prefixRules = new Map<keyof Kinds, PrefixRule<Kind>>();
+  private readonly infixRules = new Map<keyof Kinds, InfixRule<Kind>>();
 
   // prettier-ignore
   constructor(lexer: PeekableLexer) {
     this.lexer = lexer;
 
-    this.addRule("equals",       { infix: this.binary, prec: Precedence.cmp });
-    this.addRule("bangEquals",   { infix: this.binary, prec: Precedence.cmp });
-    this.addRule("less",         { infix: this.binary, prec: Precedence.cmp });
-    this.addRule("lessEqual",    { infix: this.binary, prec: Precedence.cmp });
-    this.addRule("greater",      { infix: this.binary, prec: Precedence.cmp });
-    this.addRule("greaterEqual", { infix: this.binary, prec: Precedence.cmp });
-    this.addRule("plus",         { prefix: this.unary, infix: this.binary, prec: Precedence.add });
-    this.addRule("minus",        { prefix: this.unary, infix: this.binary, prec: Precedence.add });
-    this.addRule("star",         { infix: this.binary, prec: Precedence.mul });
-    this.addRule("slash",        { infix: this.binary, prec: Precedence.mul });
-    this.addRule("percent",      { infix: this.binary, prec: Precedence.mul });
+    this.prefixRule("name",      this.primary);
+    this.prefixRule("true",      this.primary);
+    this.prefixRule("false",     this.primary);
+    this.prefixRule("integer",   this.primary);
+    this.prefixRule("float",     this.primary);
+    this.prefixRule("parenOpen", this.primary);
 
-    this.addRule("bang", { prefix: this.unary });
+    this.prefixRule("bang",  this.unary);
+    this.prefixRule("plus",  this.unary);
+    this.prefixRule("minus", this.unary);
 
-    this.addRule("name",      { prefix: this.primary });
-    this.addRule("true",      { prefix: this.primary });
-    this.addRule("false",     { prefix: this.primary });
-    this.addRule("integer",   { prefix: this.primary });
-    this.addRule("float",     { prefix: this.primary });
-    this.addRule("parenOpen", { prefix: this.primary });
+    this.infixRule("equals",       this.binary, Precedence.cmp);
+    this.infixRule("bangEquals",   this.binary, Precedence.cmp);
+    this.infixRule("less",         this.binary, Precedence.cmp);
+    this.infixRule("lessEqual",    this.binary, Precedence.cmp);
+    this.infixRule("greater",      this.binary, Precedence.cmp);
+    this.infixRule("greaterEqual", this.binary, Precedence.cmp);
+    this.infixRule("plus",         this.binary, Precedence.add);
+    this.infixRule("minus",        this.binary, Precedence.add);
+    this.infixRule("star",         this.binary, Precedence.mul);
+    this.infixRule("slash",        this.binary, Precedence.mul);
+    this.infixRule("percent",      this.binary, Precedence.mul);
   }
 
   parseExpr(): AstExpr {
@@ -214,7 +217,7 @@ class ExprParser {
 
   private parsePrecedence(prec: Precedence): AstExpr {
     const token = this.lexer.next();
-    const prefix = this.rules.get(token.kind.name)?.prefix;
+    const prefix = this.prefixRules.get(token.kind.name);
     if (prefix === undefined) {
       throw new SinosError(errorKinds.expectExpr, token.span);
     }
@@ -223,7 +226,7 @@ class ExprParser {
     while (prec <= this.currentPrecedence) {
       const token = this.lexer.next();
 
-      const infix = this.rules.get(token.kind.name)?.infix;
+      const infix = this.infixRules.get(token.kind.name)?.fn;
       assert.ok(infix, `Missing infix function for kind ${token.kind.name}`);
 
       left = infix.call(this, left, token);
@@ -233,7 +236,7 @@ class ExprParser {
   }
 
   private precedenceOf(kind: keyof Kinds): Precedence {
-    return this.rules.get(kind)?.prec ?? Precedence.none;
+    return this.infixRules.get(kind)?.prec ?? Precedence.none;
   }
 
   private get currentPrecedence(): Precedence {
@@ -241,8 +244,19 @@ class ExprParser {
     return this.precedenceOf(token.kind.name);
   }
 
-  private addRule<K extends Kind>(kind: K["name"], rule: ParseRule<K>): void {
-    this.rules.set(kind, rule as ParseRule<Kind>);
+  private prefixRule<K extends Kind>(
+    kind: K["name"],
+    rule: PrefixRule<K>
+  ): void {
+    this.prefixRules.set(kind, rule as PrefixRule<Kind>);
+  }
+
+  private infixRule<K extends Kind>(
+    kind: K["name"],
+    fn: InfixRule<K>["fn"],
+    prec: Precedence
+  ): void {
+    this.infixRules.set(kind, { fn: fn as InfixRule<Kind>["fn"], prec });
   }
 }
 
