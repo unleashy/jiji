@@ -9,11 +9,12 @@ import { Ast } from "../../src/ast";
 import { Parser } from "../../src/parser";
 
 type TestCase =
-  | { desc: string; input: string; output?: string }
+  | { desc: string; input: string; output?: string; only?: boolean }
   | {
       desc: string;
       input: string;
       error: (makeSpan: (index: number, length: number) => Span) => SinosError;
+      only?: boolean;
     };
 
 const testCases: TestCase[] = [
@@ -278,7 +279,7 @@ const testCases: TestCase[] = [
 ];
 
 for (const testCase of testCases) {
-  test(`parser ${testCase.desc}`, () => {
+  const testFn = () => {
     const file = new File("<test>", testCase.input);
     const sut = new Parser(new Lexer(file));
 
@@ -305,7 +306,13 @@ for (const testCase of testCases) {
         throw e;
       }
     }
-  });
+  };
+
+  if (testCase.only) {
+    test.only(`parser ${testCase.desc}`, testFn);
+  } else {
+    test(`parser ${testCase.desc}`, testFn);
+  }
 }
 
 function printAst(ast: Ast): string {
