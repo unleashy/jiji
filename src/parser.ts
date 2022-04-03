@@ -95,6 +95,7 @@ export class Parser {
 // noinspection JSUnusedGlobalSymbols
 enum Precedence {
   none,
+  eq,
   cmp,
   cat,
   add,
@@ -151,8 +152,8 @@ class ExprParser {
     this.prefixRule("plus",  this.unary);
     this.prefixRule("minus", this.unary);
 
-    this.infixRule("equals",       this.binary, Precedence.cmp);
-    this.infixRule("bangEquals",   this.binary, Precedence.cmp);
+    this.infixRule("equals",       this.binary, Precedence.eq);
+    this.infixRule("bangEquals",   this.binary, Precedence.eq);
     this.infixRule("less",         this.binary, Precedence.cmp);
     this.infixRule("lessEqual",    this.binary, Precedence.cmp);
     this.infixRule("greater",      this.binary, Precedence.cmp);
@@ -165,7 +166,7 @@ class ExprParser {
   }
 
   parseExpr(): AstExpr {
-    return this.parsePrecedence(Precedence.cmp);
+    return this.parsePrecedence(Precedence.eq);
   }
 
   private binary(left: AstExpr, token: Token): AstExpr {

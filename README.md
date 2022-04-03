@@ -30,9 +30,10 @@ Stmt ← LetStmt
 LetStmt  ← "let" Name (":" Name)? "=" Expr ";"
 ExprStmt ← Expr ";"
 
-Expr ← CmpExpr
+Expr ← EqExpr
 
-CmpExpr   ← CatExpr (("==" / "!=" / "<" / "<=" / ">" / ">=") CatExpr)?
+EqExpr    ← CmpExpr (("==" / "!=") CmpExpr)*
+CmpExpr   ← CatExpr (("<" / "<=" / ">" / ">=") CatExpr)*
 CatExpr   ← AddExpr ("~" AddExpr)*
 AddExpr   ← MulExpr (("+" / "-") MulExpr)*
 MulExpr   ← UnaryExpr (("*" / "/" / "%") UnaryExpr)*

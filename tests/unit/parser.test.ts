@@ -203,17 +203,25 @@ const testCases: TestCase[] = [
   },
   {
     desc: "follows precedence and associativity correctly",
-    input: "1 + 2 * 3 == 4;",
+    input: "1 + 2 - 3 * 4 / 5 > 6 == 7 < 8;",
     output: `
-      module<0,15>
-        exprStmt<0,15>
-          binary<0,14> ==
-            binary<0,9> +
-              integer<0,1> 1
-              binary<4,5> *
-                integer<4,1> 2
-                integer<8,1> 3
-            integer<13,1> 4
+      module<0,31>
+        exprStmt<0,31>
+          binary<0,30> ==
+            binary<0,21> >
+              binary<0,17> -
+                binary<0,5> +
+                  integer<0,1> 1
+                  integer<4,1> 2
+                binary<8,9> /
+                  binary<8,5> *
+                    integer<8,1> 3
+                    integer<12,1> 4
+                  integer<16,1> 5
+              integer<20,1> 6
+            binary<25,5> <
+              integer<25,1> 7
+              integer<29,1> 8
     `
   },
   {
