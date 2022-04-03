@@ -71,6 +71,15 @@ const testCases: TestCase[] = [
     `
   },
   {
+    desc: "accepts a single string",
+    input: `"hello world";`,
+    output: `
+      module<0,14>
+        exprStmt<0,14>
+          string<0,13> "hello world"
+    `
+  },
+  {
     desc: "accepts unary expressions",
     input: "!-+1;",
     output: `
@@ -111,7 +120,20 @@ const testCases: TestCase[] = [
     `
   },
   {
-    desc: "accepts cmp expressions (equals)",
+    desc: "accepts cat expressions",
+    input: `"a" ~ "b" ~ "c";`,
+    output: `
+      module<0,16>
+        exprStmt<0,16>
+          binary<0,15> ~
+            binary<0,9> ~
+              string<0,3> "a"
+              string<6,3> "b"
+            string<12,3> "c"
+    `
+  },
+  {
+    desc: "accepts eq expressions (equals)",
     input: "1 == 2;",
     output: `
       module<0,7>
@@ -122,7 +144,7 @@ const testCases: TestCase[] = [
     `
   },
   {
-    desc: "accepts cmp expressions not (equals)",
+    desc: "accepts eq expressions (not equals)",
     input: "1 != 2;",
     output: `
       module<0,7>
@@ -203,25 +225,27 @@ const testCases: TestCase[] = [
   },
   {
     desc: "follows precedence and associativity correctly",
-    input: "1 + 2 - 3 * 4 / 5 > 6 == 7 < 8;",
+    input: "1 + 2 - 3 * 4 / 5 ~ 6 > 7 == 8 < 9;",
     output: `
-      module<0,31>
-        exprStmt<0,31>
-          binary<0,30> ==
-            binary<0,21> >
-              binary<0,17> -
-                binary<0,5> +
-                  integer<0,1> 1
-                  integer<4,1> 2
-                binary<8,9> /
-                  binary<8,5> *
-                    integer<8,1> 3
-                    integer<12,1> 4
-                  integer<16,1> 5
-              integer<20,1> 6
-            binary<25,5> <
-              integer<25,1> 7
+      module<0,35>
+        exprStmt<0,35>
+          binary<0,34> ==
+            binary<0,25> >
+              binary<0,21> ~
+                binary<0,17> -
+                  binary<0,5> +
+                    integer<0,1> 1
+                    integer<4,1> 2
+                  binary<8,9> /
+                    binary<8,5> *
+                      integer<8,1> 3
+                      integer<12,1> 4
+                    integer<16,1> 5
+                integer<20,1> 6
+              integer<24,1> 7
+            binary<29,5> <
               integer<29,1> 8
+              integer<33,1> 9
     `
   },
   {
@@ -399,10 +423,13 @@ function printAst(ast: Ast): string {
     case "name":
     case "integer":
     case "float":
-    case "boolean": {
+    case "boolean":
       result += ` ${ast.value}`;
       break;
-    }
+
+    case "string":
+      result += ` ${JSON.stringify(ast.value)}`;
+      break;
 
     default:
       // @ts-ignore

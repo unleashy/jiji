@@ -30,11 +30,12 @@ export type AstExpr =
   | AstName
   | AstInteger
   | AstFloat
+  | AstString
   | AstBoolean;
 
 export type ArithmeticOp = "+" | "-" | "*" | "/" | "%";
 export type OrderingOp = "<" | "<=" | ">" | ">=";
-export type BinaryOp = "==" | "!=" | OrderingOp | ArithmeticOp;
+export type BinaryOp = OrderingOp | ArithmeticOp | "==" | "!=" | "~";
 
 export interface AstBinary extends AstCommon<"binary"> {
   left: AstExpr;
@@ -63,6 +64,10 @@ export interface AstInteger extends AstCommon<"integer"> {
 
 export interface AstFloat extends AstCommon<"float"> {
   value: number;
+}
+
+export interface AstString extends AstCommon<"string"> {
+  value: string;
 }
 
 export interface AstBoolean extends AstCommon<"boolean"> {
@@ -135,6 +140,12 @@ export const ast = {
 
   float: (value: number, span: Span): AstFloat => ({
     kind: "float",
+    value,
+    span
+  }),
+
+  string: (value: string, span: Span): AstString => ({
+    kind: "string",
     value,
     span
   }),

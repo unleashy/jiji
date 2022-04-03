@@ -122,7 +122,8 @@ const kindToBinaryOp: Readonly<Partial<Record<keyof Kinds, BinaryOp>>> =
     less: "<",
     lessEqual: "<=",
     greater: ">",
-    greaterEqual: ">="
+    greaterEqual: ">=",
+    tilde: "~"
   });
 
 const kindToUnaryOp: Readonly<Partial<Record<keyof Kinds, UnaryOp>>> =
@@ -146,6 +147,7 @@ class ExprParser {
     this.prefixRule("false",     this.primary);
     this.prefixRule("integer",   this.primary);
     this.prefixRule("float",     this.primary);
+    this.prefixRule("string",    this.primary);
     this.prefixRule("parenOpen", this.primary);
 
     this.prefixRule("bang",  this.unary);
@@ -158,6 +160,7 @@ class ExprParser {
     this.infixRule("lessEqual",    this.cmp, Precedence.cmp);
     this.infixRule("greater",      this.cmp, Precedence.cmp);
     this.infixRule("greaterEqual", this.cmp, Precedence.cmp);
+    this.infixRule("tilde",        this.binary, Precedence.cat);
     this.infixRule("plus",         this.binary, Precedence.add);
     this.infixRule("minus",        this.binary, Precedence.add);
     this.infixRule("star",         this.binary, Precedence.mul);
@@ -231,6 +234,9 @@ class ExprParser {
 
       case "float":
         return ast.float(token.kind.value, token.span);
+
+      case "string":
+        return ast.string(token.kind.value, token.span);
 
       case "parenOpen":
         const expr = this.parseExpr();
