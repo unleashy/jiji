@@ -225,6 +225,21 @@ const testCases: TestCase[] = [
     `
   },
   {
+    desc: "errors on chained equality operators (equals)",
+    input: "1 == 2 == 3;",
+    error: s => new SinosError(errorKinds.eqChain, s(5, 6))
+  },
+  {
+    desc: "errors on chained equality operators (not equals)",
+    input: "1 == 2 != 3;",
+    error: s => new SinosError(errorKinds.eqChain, s(5, 6))
+  },
+  {
+    desc: "errors on chained comparison operators",
+    input: "1 < 2 <= 3;",
+    error: s => new SinosError(errorKinds.cmpChain, s(4, 6))
+  },
+  {
     desc: "accepts let statements",
     input: "let name = 1 + 2;",
     output: `

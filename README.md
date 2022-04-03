@@ -32,8 +32,8 @@ ExprStmt ← Expr ";"
 
 Expr ← EqExpr
 
-EqExpr    ← CmpExpr (("==" / "!=") CmpExpr)*
-CmpExpr   ← CatExpr (("<" / "<=" / ">" / ">=") CatExpr)*
+EqExpr    ← CmpExpr (("==" / "!=") CmpExpr)?
+CmpExpr   ← CatExpr (("<" / "<=" / ">" / ">=") CatExpr)?
 CatExpr   ← AddExpr ("~" AddExpr)*
 AddExpr   ← MulExpr (("+" / "-") MulExpr)*
 MulExpr   ← UnaryExpr (("*" / "/" / "%") UnaryExpr)*

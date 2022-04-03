@@ -1,5 +1,5 @@
 import { strict as assert } from "assert";
-import { errorKinds, SinosError } from "./error";
+import { ErrorKind, errorKinds, SinosError } from "./error";
 import { Kind, Kinds, Token, TokenOfKind } from "./token";
 import { Lexer } from "./lexer";
 import {
@@ -106,7 +106,7 @@ enum Precedence {
 
 type PrefixRule<K extends Kind> = (token: Token<K>) => AstExpr;
 interface InfixRule<K extends Kind> {
-  fn: (left: AstExpr, token: Token) => AstExpr;
+  fn: (left: AstExpr, token: Token<K>) => AstExpr;
   prec: Precedence;
 }
 
@@ -152,12 +152,12 @@ class ExprParser {
     this.prefixRule("plus",  this.unary);
     this.prefixRule("minus", this.unary);
 
-    this.infixRule("equals",       this.binary, Precedence.eq);
-    this.infixRule("bangEquals",   this.binary, Precedence.eq);
-    this.infixRule("less",         this.binary, Precedence.cmp);
-    this.infixRule("lessEqual",    this.binary, Precedence.cmp);
-    this.infixRule("greater",      this.binary, Precedence.cmp);
-    this.infixRule("greaterEqual", this.binary, Precedence.cmp);
+    this.infixRule("equals",       this.eq, Precedence.eq);
+    this.infixRule("bangEquals",   this.eq, Precedence.eq);
+    this.infixRule("less",         this.cmp, Precedence.cmp);
+    this.infixRule("lessEqual",    this.cmp, Precedence.cmp);
+    this.infixRule("greater",      this.cmp, Precedence.cmp);
+    this.infixRule("greaterEqual", this.cmp, Precedence.cmp);
     this.infixRule("plus",         this.binary, Precedence.add);
     this.infixRule("minus",        this.binary, Precedence.add);
     this.infixRule("star",         this.binary, Precedence.mul);
@@ -168,6 +168,34 @@ class ExprParser {
   parseExpr(): AstExpr {
     return this.parsePrecedence(Precedence.eq);
   }
+
+  private binaryNoChain(
+    errorKind: () => ErrorKind,
+    ...ops: BinaryOp[]
+  ): InfixRule<Kind>["fn"] {
+    return (left, token) => {
+      const op = kindToBinaryOp[token.kind.name];
+      assert.ok(op, `Invalid kind ${token.kind.name} given to binaryNoChain`);
+
+      const prec = this.precedenceOf(token.kind.name);
+      const right = this.parsePrecedence(prec);
+      if (right.kind === "binary" && ops.includes(right.op)) {
+        throw new SinosError(errorKind(), right.span);
+      }
+
+      return ast.binary(left, op, right, left.span.join(right.span));
+    };
+  }
+
+  private eq = this.binaryNoChain(() => errorKinds.eqChain, "==", "!=");
+
+  private cmp = this.binaryNoChain(
+    () => errorKinds.cmpChain,
+    ">",
+    ">=",
+    "<",
+    "<="
+  );
 
   private binary(left: AstExpr, token: Token): AstExpr {
     const op = kindToBinaryOp[token.kind.name];

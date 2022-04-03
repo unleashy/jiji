@@ -28,6 +28,8 @@ export const errorKinds = Object.freeze({
   expectCloseParen: errorKind({ name: "expectCloseParen" }),
   expectName: errorKind({ name: "expectName" }),
   expectEqual: errorKind({ name: "expectEqual" }),
+  eqChain: errorKind({ name: "eqChain" }),
+  cmpChain: errorKind({ name: "cmpChain" }),
 
   // type errors
   unaryTypeMismatch: (op: UnaryOp, actualType: Type) =>
@@ -87,7 +89,7 @@ export class SinosError extends Error {
         return `0x${this.errorKind.codept} is not a valid Unicode code point`;
 
       case "expectSemi":
-        return "Missing semicolon";
+        return "Expected a semicolon";
 
       case "expectExpr":
         return "Expected an expression";
@@ -100,6 +102,18 @@ export class SinosError extends Error {
 
       case "expectEqual":
         return "Expected an equal sign";
+
+      case "eqChain":
+        return (
+          "Equality operators are not chainable. If you really meant to " +
+          "do this, wrap this in parentheses"
+        );
+
+      case "cmpChain":
+        return (
+          "Comparison operators are not chainable. If you really meant to " +
+          "do this, wrap this in parentheses"
+        );
 
       case "unaryTypeMismatch":
         return (
