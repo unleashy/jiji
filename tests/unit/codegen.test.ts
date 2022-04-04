@@ -38,6 +38,7 @@ test("expression statements get logged", () => {
       ast.exprStmt(ast.integer(42)),
       ast.exprStmt(ast.float(3.1415)),
       ast.exprStmt(ast.boolean(true)),
+      ast.exprStmt(ast.string("hello\nworld")),
       ast.exprStmt(ast.unary("!", ast.boolean(true))),
       ast.exprStmt(ast.unary("-", ast.integer(999))),
       ast.exprStmt(ast.unary("+", ast.integer(50))),
@@ -55,7 +56,8 @@ test("expression statements get logged", () => {
           "*",
           ast.integer(3)
         )
-      )
+      ),
+      ast.exprStmt(ast.binary(ast.string("a"), "~", ast.string("b")))
     ])
   );
 
@@ -63,12 +65,14 @@ test("expression statements get logged", () => {
     "42",
     "3.1415",
     "true",
+    "hello\nworld",
     "false",
     "-999",
     "50",
     "3",
     "true",
-    "9"
+    "9",
+    "ab"
   ]);
 });
 
@@ -107,7 +111,6 @@ test("division of integers truncates", () => {
     ast.module([ast.exprStmt(ast.binary(ast.integer(1), "/", ast.integer(2)))])
   );
 
-  console.log(result);
   assert.equal(exec(result), ["0"]);
 });
 

@@ -47,6 +47,7 @@ export class Codegen {
           switch (expr.op) {
             case "==": return "===";
             case "!=": return "!==";
+            case "~": return "+";
             default: return expr.op;
           }
         })();
@@ -70,6 +71,9 @@ export class Codegen {
       case "float":
       case "boolean":
         return String(expr.value);
+
+      case "string":
+        return JSON.stringify(expr.value);
     }
   }
 }

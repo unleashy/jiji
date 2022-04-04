@@ -5,10 +5,10 @@ small programming language that compiles to JS
 ## todo list
 
 - [x] variables (with and without type inference)
-- [~] more primitive types
+- [x] more primitive types
   - [x] float
-  - [~] string
-- [~] string concatenation
+  - [x] string
+- [x] string concatenation
 - [ ] hex int literal
 - [ ] block scopes
 - [ ] functions
