@@ -1,6 +1,6 @@
 import { errorKinds, SinosError } from "../error";
 import { Type } from "./common";
-import { Bool, Int, Float, Unit } from "./primitives";
+import { Bool, Int, Float, Unit, TyString } from "./primitives";
 import {
   Ast,
   AstBinary,
@@ -17,7 +17,8 @@ export const types = {
   Unit: new Unit(),
   Int: new Int(),
   Float: new Float(),
-  Bool: new Bool()
+  Bool: new Bool(),
+  String: new TyString()
 };
 
 export class Types {
@@ -65,6 +66,9 @@ export class Types {
 
       case "boolean":
         return types.Bool;
+
+      case "string":
+        return types.String;
     }
   }
 
@@ -131,7 +135,7 @@ export class Types {
         return types.Bool;
 
       default:
-        const result = leftType.applyArithmeticOp(ast.op, rightType);
+        const result = leftType.applyBinaryOp(ast.op, rightType);
         if (result === undefined) {
           throw new SinosError(
             errorKinds.binaryTypeMismatch(leftType, ast.op, rightType),

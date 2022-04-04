@@ -3,13 +3,7 @@ import * as assert from "uvu/assert";
 import { File } from "../../src/file";
 import { Span } from "../../src/span";
 import { SinosError, errorKinds } from "../../src/error";
-import {
-  ArithmeticOp,
-  Ast,
-  AstExpr,
-  BinaryOp,
-  OrderingOp
-} from "../../src/ast";
+import { BasicOp, Ast, AstExpr, BinaryOp, OrderingOp } from "../../src/ast";
 import { useSpanForBuildingAst } from "../util";
 import { Type, Types, types } from "../../src/types";
 
@@ -60,6 +54,14 @@ test("the type of a float is Float", () => {
   assert.equal(type, types.Float);
 });
 
+test("the type of a string is String", () => {
+  const sut = new Types();
+
+  const type = sut.typeOf(ast.string("abc"));
+
+  assert.equal(type, types.String);
+});
+
 test("the type of a boolean is Bool", () => {
   const sut = new Types();
 
@@ -78,91 +80,85 @@ test("the type of a group is the type of its expression", () => {
   assert.equal(type, types.Int);
 });
 
-test("the type of negating an integer is Int", () => {
+test("negating works for Ints and Floats", () => {
   const sut = new Types();
-
-  const type = sut.typeOf(ast.unary("-", ast.integer(123)));
-
-  assert.equal(type, types.Int);
-});
-
-test("the type of plussing an integer is Int", () => {
-  const sut = new Types();
-
-  const type = sut.typeOf(ast.unary("+", ast.integer(123)));
-
-  assert.equal(type, types.Int);
-});
-
-test("the type of negating a float is Float", () => {
-  const sut = new Types();
-
-  const type = sut.typeOf(ast.unary("-", ast.float(3.14)));
-
-  assert.equal(type, types.Float);
-});
-
-test("the type of plussing a float is Float", () => {
-  const sut = new Types();
-
-  const type = sut.typeOf(ast.unary("+", ast.float(3.14)));
-
-  assert.equal(type, types.Float);
-});
-
-test("negating a boolean is an error", () => {
-  const sut = new Types();
-
-  const err = catchErr(() => sut.typeOf(ast.unary("-", ast.boolean(true))));
-
-  assert.equal(
-    err,
-    new SinosError(errorKinds.unaryTypeMismatch("-", types.Bool), span)
-  );
-});
-
-test("plussing a boolean is an error", () => {
-  const sut = new Types();
-
-  const err = catchErr(() => sut.typeOf(ast.unary("+", ast.boolean(false))));
-
-  assert.equal(
-    err,
-    new SinosError(errorKinds.unaryTypeMismatch("+", types.Bool), span)
-  );
-});
-
-test("the type of not-ing a boolean is Bool", () => {
-  const sut = new Types();
-
-  const type = sut.typeOf(ast.unary("!", ast.boolean(true)));
-
-  assert.equal(type, types.Bool);
-});
-
-test("not-ing a non-Bool is an error", () => {
-  const sut = new Types();
-
-  const tys: [Type, AstExpr][] = [
-    [types.Int, ast.integer(0)],
-    [types.Float, ast.float(0)]
+  const cases = [
+    { node: ast.integer(123), ty: types.Int },
+    { node: ast.float(3.14), ty: types.Float },
+    { node: ast.boolean(true), ty: types.Bool, err: true },
+    { node: ast.string("foo"), ty: types.String, err: true }
   ];
-  const err = tys.map(([, node]) =>
+
+  const result = cases.map(({ node }) =>
+    catchErr(() => sut.typeOf(ast.unary("-", node)))
+  );
+
+  assert.equal(
+    result,
+    cases.map(({ ty, err }) => {
+      if (!err) {
+        return ty;
+      } else {
+        return new SinosError(errorKinds.unaryTypeMismatch("-", ty), span);
+      }
+    })
+  );
+});
+
+test("plussing works for Ints and Floats", () => {
+  const sut = new Types();
+  const cases = [
+    { node: ast.integer(123), ty: types.Int },
+    { node: ast.float(3.14), ty: types.Float },
+    { node: ast.boolean(true), ty: types.Bool, err: true },
+    { node: ast.string("foo"), ty: types.String, err: true }
+  ];
+
+  const result = cases.map(({ node }) =>
+    catchErr(() => sut.typeOf(ast.unary("+", node)))
+  );
+
+  assert.equal(
+    result,
+    cases.map(({ ty, err }) => {
+      if (!err) {
+        return ty;
+      } else {
+        return new SinosError(errorKinds.unaryTypeMismatch("+", ty), span);
+      }
+    })
+  );
+});
+
+test("not-ing works for Bools", () => {
+  const sut = new Types();
+  const cases = [
+    { node: ast.boolean(true), ty: types.Bool },
+    { node: ast.integer(123), ty: types.Int, err: true },
+    { node: ast.float(3.14), ty: types.Float, err: true },
+    { node: ast.string("foo"), ty: types.String, err: true }
+  ];
+
+  const result = cases.map(({ node }) =>
     catchErr(() => sut.typeOf(ast.unary("!", node)))
   );
 
   assert.equal(
-    err,
-    tys.map(
-      ([ty]) => new SinosError(errorKinds.unaryTypeMismatch("!", ty), span)
-    )
+    result,
+    cases.map(({ ty, err }) => {
+      if (!err) {
+        return ty;
+      } else {
+        return new SinosError(errorKinds.unaryTypeMismatch("!", ty), span);
+      }
+    })
   );
 });
 
 test("the type of arithmetic with two integers is Int", () => {
   const sut = new Types();
 
-  const ops: ArithmeticOp[] = ["+", "-", "*", "/", "%"];
+  const ops: BasicOp[] = ["+", "-", "*", "/", "%"];
   const opTypes = ops.map(op =>
     sut.typeOf(ast.binary(ast.integer(123), op, ast.integer(123)))
   );
@@ -176,7 +172,7 @@ test("the type of arithmetic with two integers is Int", () => {
 test("the type of arithmetic with two floats is Float", () => {
   const sut = new Types();
 
-  const ops: ArithmeticOp[] = ["+", "-", "*", "/", "%"];
+  const ops: BasicOp[] = ["+", "-", "*", "/", "%"];
   const opTypes = ops.map(op =>
     sut.typeOf(ast.binary(ast.float(123), op, ast.float(123)))
   );
@@ -190,7 +186,7 @@ test("the type of arithmetic with two floats is Float", () => {
 test("arithmetic with non-Ints/Floats is an error", () => {
   const sut = new Types();
 
-  const ops: ArithmeticOp[] = ["+", "-", "*", "/", "%"];
+  const ops: BasicOp[] = ["+", "-", "*", "/", "%"];
   const errors = ops.map(op =>
     catchErr(() =>
       sut.typeOf(ast.binary(ast.boolean(true), op, ast.boolean(false)))
@@ -205,6 +201,30 @@ test("arithmetic with non-Ints/Floats is an error", () => {
           errorKinds.binaryTypeMismatch(types.Bool, op, types.Bool),
           span
         )
+    )
+  );
+});
+
+test("the type of concatenating two strings is String", () => {
+  const sut = new Types();
+
+  const type = sut.typeOf(ast.binary(ast.string("a"), "~", ast.string("b")));
+
+  assert.equal(type, types.String);
+});
+
+test("concatenating non-Strings is an error", () => {
+  const sut = new Types();
+
+  const err = catchErr(() =>
+    sut.typeOf(ast.binary(ast.integer(1), "~", ast.boolean(false)))
+  );
+
+  assert.equal(
+    err,
+    new SinosError(
+      errorKinds.binaryTypeMismatch(types.Int, "~", types.Bool),
+      span
     )
   );
 });

@@ -1,4 +1,4 @@
-import { ArithmeticOp, OrderingOp, UnaryOp } from "../ast";
+import { BasicOp, OrderingOp, UnaryOp } from "../ast";
 
 export abstract class Type {
   abstract name: string;
@@ -7,7 +7,7 @@ export abstract class Type {
     return undefined;
   }
 
-  applyArithmeticOp(op: ArithmeticOp, rhs: Type): Type | undefined {
+  applyBinaryOp(op: BasicOp, rhs: Type): Type | undefined {
     return undefined;
   }
 

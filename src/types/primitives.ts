@@ -1,5 +1,5 @@
 import { Type } from "./common";
-import { ArithmeticOp, OrderingOp, UnaryOp } from "../ast";
+import { BasicOp, UnaryOp } from "../ast";
 
 export class Unit extends Type {
   name = "Unit";
@@ -14,8 +14,8 @@ export class Int extends Type {
     }
   }
 
-  override applyArithmeticOp(op: ArithmeticOp, rhs: Type): Type | undefined {
-    if (rhs instanceof Int) {
+  override applyBinaryOp(op: BasicOp, rhs: Type): Type | undefined {
+    if (op !== "~" && rhs instanceof Int) {
       return this;
     }
   }
@@ -34,8 +34,8 @@ export class Float extends Type {
     }
   }
 
-  override applyArithmeticOp(op: ArithmeticOp, rhs: Type): Type | undefined {
-    if (rhs instanceof Float) {
+  override applyBinaryOp(op: BasicOp, rhs: Type): Type | undefined {
+    if (op !== "~" && rhs instanceof Float) {
       return this;
     }
   }
@@ -50,6 +50,16 @@ export class Bool extends Type {
 
   override applyUnaryOp(op: UnaryOp): Type | undefined {
     if (op === "!") {
+      return this;
+    }
+  }
+}
+
+export class TyString extends Type {
+  name = "String";
+
+  override applyBinaryOp(op: BasicOp, rhs: Type): Type | undefined {
+    if (op === "~" && rhs instanceof TyString) {
       return this;
     }
   }
