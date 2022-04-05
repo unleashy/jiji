@@ -25,6 +25,7 @@ export interface AstExprStmt extends AstCommon<"exprStmt"> {
 
 export type AstExpr =
   | AstBlock
+  | AstIf
   | AstBinary
   | AstUnary
   | AstGroup
@@ -34,9 +35,18 @@ export type AstExpr =
   | AstString
   | AstBoolean;
 
+export function isBlocky(expr: AstExpr): boolean {
+  return expr.kind === "block" || expr.kind === "if";
+}
+
 export interface AstBlock extends AstCommon<"block"> {
   stmts: AstStmt[];
   lastExpr: AstExpr | undefined;
+}
+
+export interface AstIf extends AstCommon<"if"> {
+  branches: [AstExpr, AstBlock][];
+  elseBranch: AstBlock | undefined;
 }
 
 export type BasicOp = "+" | "-" | "*" | "/" | "%" | "~";
@@ -114,6 +124,17 @@ export const ast = {
     kind: "block",
     stmts,
     lastExpr,
+    span
+  }),
+
+  if: (
+    branches: [AstExpr, AstBlock][],
+    elseBranch: AstBlock | undefined,
+    span: Span
+  ): AstIf => ({
+    kind: "if",
+    branches,
+    elseBranch,
     span
   }),
 

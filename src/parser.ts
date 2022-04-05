@@ -7,10 +7,12 @@ import {
   AstBlock,
   AstExpr,
   AstExprStmt,
+  AstIf,
   AstLetStmt,
   AstModule,
   AstStmt,
   BinaryOp,
+  isBlocky,
   UnaryOp
 } from "./ast";
 
@@ -113,7 +115,7 @@ export class Parser {
   }
 
   private exprWithBlock(): AstExpr | undefined {
-    return this.blockExpr();
+    return this.blockExpr() || this.ifExpr();
   }
 
   private blockExpr(): AstBlock | undefined {
@@ -134,7 +136,7 @@ export class Parser {
           break;
         }
 
-        if (stmtOrExpr.expr.kind === "block") {
+        if (isBlocky(stmtOrExpr.expr)) {
           this.lexer.match("semi"); // optionally match a semi
         } else {
           this.lexer.expectKind(
@@ -153,6 +155,44 @@ export class Parser {
     );
 
     return ast.block(stmts, lastExpr, braceOpen.span.join(braceClose.span));
+  }
+
+  private expectBlockExpr(): AstBlock {
+    const block = this.blockExpr();
+    if (block === undefined) {
+      throw new SinosError(errorKinds.expectBlock, this.lexer.next().span);
+    }
+
+    return block;
+  }
+
+  private ifExpr(): AstIf | undefined {
+    const if_ = this.lexer.match("if");
+    if (if_ === undefined) return undefined;
+
+    const branches: AstIf["branches"] = [];
+    let elseBranch;
+    while (true) {
+      const cond = this.exprWithoutBlock();
+      const block = this.expectBlockExpr();
+
+      branches.push([cond, block]);
+
+      if (this.lexer.match("else")) {
+        if (this.lexer.match("if")) {
+          continue;
+        }
+
+        elseBranch = this.expectBlockExpr();
+      }
+
+      break;
+    }
+
+    const span = if_.span.join(
+      elseBranch ? elseBranch.span : branches[branches.length - 1][1].span
+    );
+    return ast.if(branches, elseBranch, span);
   }
 
   private exprWithoutBlock(): AstExpr {

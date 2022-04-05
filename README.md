@@ -39,7 +39,7 @@ ExprWithBlock ← BlockExpr
               / IfExpr
 
 BlockExpr  ← "{" Stmt* ExprWithoutBlock? "}"
-IfExpr     ← "if" Expr BlockExpr ("else" (BlockExpr / IfExpr))?
+IfExpr     ← "if" ExprWithoutBlock BlockExpr ("else" (BlockExpr / IfExpr))?
 
 ExprWithoutBlock ← EqExpr
 

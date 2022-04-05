@@ -31,6 +31,7 @@ export const errorKinds = Object.freeze({
   expectEqual: errorKind({ name: "expectEqual" }),
   eqChain: errorKind({ name: "eqChain" }),
   cmpChain: errorKind({ name: "cmpChain" }),
+  expectBlock: errorKind({ name: "expectBlock" }),
 
   // type errors
   unaryTypeMismatch: (op: UnaryOp, actualType: Type) =>
@@ -118,6 +119,9 @@ export class SinosError extends Error {
           "Comparison operators are not chainable. If you really meant to " +
           "do this, wrap this in parentheses"
         );
+
+      case "expectBlock":
+        return `Expected a block`;
 
       case "unaryTypeMismatch":
         return (

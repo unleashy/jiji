@@ -445,6 +445,142 @@ const testCases: TestCase[] = [
     desc: "errors on statements missing a semicolon",
     input: "{ 1 2 }",
     error: s => new SinosError(errorKinds.expectSemi, s(4, 1))
+  },
+  {
+    desc: "accepts an if",
+    input: "if true {}",
+    output: `
+      module<0,10>
+        exprStmt<0,10>
+          if<0,10>
+            boolean<3,4> true
+            block<8,2>
+    `
+  },
+  {
+    desc: "accepts an if-else",
+    input: "if a > b { a } else { b }",
+    output: `
+      module<0,25>
+        exprStmt<0,25>
+          if<0,25>
+            binary<3,5> >
+              name<3,1> a
+              name<7,1> b
+            block<9,5>
+              name<11,1> a
+            block<20,5>
+              name<22,1> b
+    `
+  },
+  {
+    desc: "accepts an if-elseif",
+    input: "if 1 + 2 { false } else if 5 + 6 { true }",
+    output: `
+      module<0,41>
+        exprStmt<0,41>
+          if<0,41>
+            binary<3,5> +
+              integer<3,1> 1
+              integer<7,1> 2
+            block<9,9>
+              boolean<11,5> false
+            binary<27,5> +
+              integer<27,1> 5
+              integer<31,1> 6
+            block<33,8>
+              boolean<35,4> true
+    `
+  },
+  {
+    desc: "accepts an if-elseif-else",
+    input: "if good { bad } else if medium { medium } else { good }",
+    output: `
+      module<0,55>
+        exprStmt<0,55>
+          if<0,55>
+            name<3,4> good
+            block<8,7>
+              name<10,3> bad
+            name<24,6> medium
+            block<31,10>
+              name<33,6> medium
+            block<47,8>
+              name<49,4> good
+    `
+  },
+  {
+    desc: "accepts a longer if-elseif-else chain",
+    input: `if 1 { 2 } else if 3 { 4 } else if 5 { 6 } else if 7 { 8 } else { 9 }`,
+    output: `
+      module<0,69>
+        exprStmt<0,69>
+          if<0,69>
+            integer<3,1> 1
+            block<5,5>
+              integer<7,1> 2
+            integer<19,1> 3
+            block<21,5>
+              integer<23,1> 4
+            integer<35,1> 5
+            block<37,5>
+              integer<39,1> 6
+            integer<51,1> 7
+            block<53,5>
+              integer<55,1> 8
+            block<64,5>
+              integer<66,1> 9
+    `
+  },
+  {
+    desc: "errors on missing condition (on if)",
+    input: "if { woops }",
+    error: s => new SinosError(errorKinds.expectExpr, s(3, 1))
+  },
+  {
+    desc: "errors on missing condition (on elseif)",
+    input: "if 1 {} else if { woops }",
+    error: s => new SinosError(errorKinds.expectExpr, s(16, 1))
+  },
+  {
+    desc: "errors on missing block (on if)",
+    input: "if 1",
+    error: s => new SinosError(errorKinds.expectBlock, s(4, 0))
+  },
+  {
+    desc: "errors on missing block (on elseif)",
+    input: "if 1 {} else if 1",
+    error: s => new SinosError(errorKinds.expectBlock, s(17, 0))
+  },
+  {
+    desc: "errors on missing block (on else)",
+    input: "if 1 {} else",
+    error: s => new SinosError(errorKinds.expectBlock, s(12, 0))
+  },
+  {
+    desc: "accepts a block with a last expression that is an if",
+    input: "{ if true {} }",
+    output: `
+      module<0,14>
+        exprStmt<0,14>
+          block<0,14>
+            if<2,10>
+              boolean<5,4> true
+              block<10,2>
+    `
+  },
+  {
+    desc: "accepts a block with a last expression that is an if with semicolon",
+    input: "{ if true {}; }",
+    output: `
+      module<0,15>
+        exprStmt<0,15>
+          block<0,15>
+            exprStmt<2,11>
+              if<2,10>
+                boolean<5,4> true
+                block<10,2>
+    `
   }
 ];
 
@@ -535,6 +671,24 @@ function printAst(ast: Ast): string {
         const lastExpr = indented(printAst(ast.lastExpr));
 
         result += `\n${lastExpr}`;
+      }
+
+      break;
+    }
+
+    case "if": {
+      const branches = ast.branches
+        .map(([expr, block]) =>
+          indented(printAst(expr) + "\n" + printAst(block))
+        )
+        .join("\n");
+
+      result += `\n${branches}`;
+
+      if (ast.elseBranch) {
+        const elseBranch = indented(printAst(ast.elseBranch));
+
+        result += `\n${elseBranch}`;
       }
 
       break;
