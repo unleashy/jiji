@@ -9,15 +9,20 @@ function kind<Name extends string, Other>(
 export const kinds = Object.freeze({
   end: kind({ name: "end" }),
 
+  // Literals
   name: (value: string) => kind({ name: "name", value }),
   integer: (value: number) => kind({ name: "integer", value }),
   float: (value: number) => kind({ name: "float", value }),
   string: (value: string) => kind({ name: "string", value }),
 
+  // Keywords
+  else: kind({ name: "else" }),
   false: kind({ name: "false" }),
+  if: kind({ name: "if" }),
   let: kind({ name: "let" }),
   true: kind({ name: "true" }),
 
+  // Symbols
   semi: kind({ name: "semi" }),
   plus: kind({ name: "plus" }),
   minus: kind({ name: "minus" }),
@@ -26,6 +31,8 @@ export const kinds = Object.freeze({
   percent: kind({ name: "percent" }),
   parenOpen: kind({ name: "parenOpen" }),
   parenClose: kind({ name: "parenClose" }),
+  braceOpen: kind({ name: "braceOpen" }),
+  braceClose: kind({ name: "braceClose" }),
   bang: kind({ name: "bang" }),
   equal: kind({ name: "equal" }),
   equals: kind({ name: "equals" }),

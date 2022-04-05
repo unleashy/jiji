@@ -39,7 +39,7 @@ const testCases: TestCase[] = [
   },
   {
     desc: "accepts all single-character symbols",
-    input: ";+-*/%()!<>:=~",
+    input: ";+-*/%()!<>:=~{}",
     output: s => [
       new Token(kinds.semi, s(0, 1)),
       new Token(kinds.plus, s(1, 1)),
@@ -55,7 +55,9 @@ const testCases: TestCase[] = [
       new Token(kinds.colon, s(11, 1)),
       new Token(kinds.equal, s(12, 1)),
       new Token(kinds.tilde, s(13, 1)),
-      new Token(kinds.end, s(14, 0))
+      new Token(kinds.braceOpen, s(14, 1)),
+      new Token(kinds.braceClose, s(15, 1)),
+      new Token(kinds.end, s(16, 0))
     ]
   },
   {
@@ -210,12 +212,14 @@ const testCases: TestCase[] = [
   },
   {
     desc: "accepts all keywords",
-    input: "false let true",
+    input: "true false let if else",
     output: s => [
-      new Token(kinds.false, s(0, 5)),
-      new Token(kinds.let, s(6, 3)),
-      new Token(kinds.true, s(10, 4)),
-      new Token(kinds.end, s(14, 0))
+      new Token(kinds.true, s(0, 4)),
+      new Token(kinds.false, s(5, 5)),
+      new Token(kinds.let, s(11, 3)),
+      new Token(kinds.if, s(15, 2)),
+      new Token(kinds.else, s(18, 4)),
+      new Token(kinds.end, s(22, 0))
     ]
   }
 ];

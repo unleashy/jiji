@@ -68,6 +68,8 @@ export class Lexer {
         case "false": return kinds.false;
         case "let": return kinds.let;
         case "true": return kinds.true;
+        case "if": return kinds.if;
+        case "else": return kinds.else;
         default: return kinds.name(span.text);
       }
     })();
@@ -254,6 +256,8 @@ export class Lexer {
         case "%": return kinds.percent;
         case "(": return kinds.parenOpen;
         case ")": return kinds.parenClose;
+        case "{": return kinds.braceOpen;
+        case "}": return kinds.braceClose;
 
         case "=":
           return this.source.match("=") ? kinds.equals : kinds.equal;
