@@ -9,10 +9,10 @@ small programming language that compiles to JS
   - [x] float
   - [x] string
 - [x] string concatenation
+- [~] conditionals (if)
 - [ ] hex int literal
 - [ ] block scopes
 - [ ] functions
-- [ ] conditionals (if, unless)
 - [ ] loops (tail call elimination?)
 - [ ] composite types (tuples, records, variants)
 - [ ] pattern matching
@@ -28,9 +28,19 @@ Stmt ← LetStmt
      / ExprStmt
 
 LetStmt  ← "let" Name (":" Name)? "=" Expr ";"
-ExprStmt ← Expr ";"
+ExprStmt ← ExprWithBlock ";"?
+         / ExprWithoutBlock ";"
 
-Expr ← EqExpr
+Expr ← ExprWithBlock
+     / ExprWithoutBlock
+
+ExprWithBlock ← BlockExpr
+              / IfExpr
+
+BlockExpr  ← "{" Stmt* ExprWithoutBlock? "}"
+IfExpr     ← "if" Expr BlockExpr ("else" (BlockExpr / IfExpr))?
+
+ExprWithoutBlock ← EqExpr
 
 EqExpr    ← CmpExpr (("==" / "!=") CmpExpr)?
 CmpExpr   ← CatExpr (("<" / "<=" / ">" / ">=") CatExpr)?
