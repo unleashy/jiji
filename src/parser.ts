@@ -3,23 +3,24 @@ import { ErrorKind, errorKinds, SinosError } from "./error";
 import { Kind, Kinds, Token, TokenOfKind } from "./token";
 import { Lexer } from "./lexer";
 import {
-  AstModule,
+  ast,
+  AstBlock,
   AstExpr,
-  BinaryOp,
-  UnaryOp,
-  AstStmt,
-  AstLetStmt,
   AstExprStmt,
-  ast
+  AstLetStmt,
+  AstModule,
+  AstStmt,
+  BinaryOp,
+  UnaryOp
 } from "./ast";
 
 export class Parser {
   private readonly lexer: PeekableLexer;
-  private readonly exprParser: ExprParser;
+  private readonly precedenceParser: PrecedenceParser;
 
   constructor(lexer: Lexer) {
     this.lexer = new PeekableLexer(lexer);
-    this.exprParser = new ExprParser(this.lexer);
+    this.precedenceParser = new PrecedenceParser(this.lexer);
   }
 
   parse(): AstModule {
@@ -37,8 +38,8 @@ export class Parser {
     return ast.module(stmts, span);
   }
 
-  private stmt(): AstStmt {
-    return this.letStmt() || this.exprStmt();
+  private stmt({ requireSemiOnExprStmt = true } = {}): AstStmt {
+    return this.letStmt() || this.exprStmt(requireSemiOnExprStmt);
   }
 
   private letStmt(): AstLetStmt | undefined {
@@ -73,11 +74,31 @@ export class Parser {
     );
   }
 
-  private exprStmt(): AstExprStmt {
-    const expr = this.expr();
-    const semi = this.expectSemi();
+  private exprStmt(requireSemi: boolean): AstExprStmt {
+    const exprWithBlock = this.exprWithBlock();
+    if (exprWithBlock) {
+      const semi = requireSemi ? this.lexer.match("semi") : this.peekSemi();
+      const span = semi
+        ? exprWithBlock.span.join(semi.span)
+        : exprWithBlock.span;
 
-    return ast.exprStmt(expr, expr.span.join(semi.span));
+      return ast.exprStmt(exprWithBlock, span);
+    } else {
+      const exprWithoutBlock = this.exprWithoutBlock();
+      const semi = requireSemi ? this.expectSemi() : this.peekSemi();
+      const span = semi
+        ? exprWithoutBlock.span.join(semi.span)
+        : exprWithoutBlock.span;
+
+      return ast.exprStmt(exprWithoutBlock, span);
+    }
+  }
+
+  private peekSemi(): TokenOfKind<"semi"> | undefined {
+    const token = this.lexer.peek();
+    return token.kind.name === "semi"
+      ? (token as TokenOfKind<"semi">)
+      : undefined;
   }
 
   private expectSemi(): TokenOfKind<"semi"> {
@@ -88,8 +109,59 @@ export class Parser {
   }
 
   private expr(): AstExpr {
-    return this.exprParser.parseExpr();
+    return this.exprWithBlock() || this.exprWithoutBlock();
   }
+
+  private exprWithBlock(): AstExpr | undefined {
+    return this.blockExpr();
+  }
+
+  private blockExpr(): AstBlock | undefined {
+    const braceOpen = this.lexer.match("braceOpen");
+    if (braceOpen === undefined) return undefined;
+
+    const stmts = [];
+    let lastExpr;
+    while (!this.lexer.hasMatch("braceClose")) {
+      if (this.lexer.hasMatch("end")) {
+        break;
+      }
+
+      const stmtOrExpr = this.stmt({ requireSemiOnExprStmt: false });
+      if (stmtOrExpr.kind === "exprStmt") {
+        if (this.lexer.hasMatch("braceClose")) {
+          lastExpr = stmtOrExpr.expr;
+          break;
+        }
+
+        if (stmtOrExpr.expr.kind === "block") {
+          this.lexer.match("semi"); // optionally match a semi
+        } else {
+          this.lexer.expectKind(
+            "semi",
+            badToken => new SinosError(errorKinds.expectSemi, badToken.span)
+          );
+        }
+      }
+
+      stmts.push(stmtOrExpr);
+    }
+
+    const braceClose = this.lexer.expectKind(
+      "braceClose",
+      badToken => new SinosError(errorKinds.expectBraceClose, badToken.span)
+    );
+
+    return ast.block(stmts, lastExpr, braceOpen.span.join(braceClose.span));
+  }
+
+  private exprWithoutBlock(): AstExpr {
+    return this.precedenceParser.parseExpr();
+  }
+}
+
+function todo(): never {
+  throw new Error("todo");
 }
 
 // noinspection JSUnusedGlobalSymbols
@@ -133,7 +205,7 @@ const kindToUnaryOp: Readonly<Partial<Record<keyof Kinds, UnaryOp>>> =
     bang: "!"
   });
 
-class ExprParser {
+class PrecedenceParser {
   private readonly lexer: PeekableLexer;
   private readonly prefixRules = new Map<keyof Kinds, PrefixRule<Kind>>();
   private readonly infixRules = new Map<keyof Kinds, InfixRule<Kind>>();
@@ -242,7 +314,7 @@ class ExprParser {
         const expr = this.parseExpr();
         const close = this.lexer.expectKind(
           "parenClose",
-          badToken => new SinosError(errorKinds.expectCloseParen, badToken.span)
+          badToken => new SinosError(errorKinds.expectParenClose, badToken.span)
         );
         return ast.group(expr, token.span.join(close.span));
     }
@@ -320,6 +392,10 @@ class PeekableLexer {
     while (this.peekBuf.length <= amount) {
       this.peekBuf.push(this.lexer.next());
     }
+  }
+
+  hasMatch(kind: keyof Kinds): boolean {
+    return this.peek().kind.name === kind;
   }
 
   match<K extends keyof Kinds>(kind: K): TokenOfKind<K> | undefined {

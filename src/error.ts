@@ -25,7 +25,8 @@ export const errorKinds = Object.freeze({
   // parser errors
   expectExpr: errorKind({ name: "expectExpr" }),
   expectSemi: errorKind({ name: "expectSemi" }),
-  expectCloseParen: errorKind({ name: "expectCloseParen" }),
+  expectParenClose: errorKind({ name: "expectParenClose" }),
+  expectBraceClose: errorKind({ name: "expectBraceClose" }),
   expectName: errorKind({ name: "expectName" }),
   expectEqual: errorKind({ name: "expectEqual" }),
   eqChain: errorKind({ name: "eqChain" }),
@@ -94,8 +95,11 @@ export class SinosError extends Error {
       case "expectExpr":
         return "Expected an expression";
 
-      case "expectCloseParen":
+      case "expectParenClose":
         return "Expected a closing parenthesis";
+
+      case "expectBraceClose":
+        return "Expected a closing brace";
 
       case "expectName":
         return "Expected a name";

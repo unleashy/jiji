@@ -296,7 +296,7 @@ const testCases: TestCase[] = [
   {
     desc: "errors on missing close parenthesis",
     input: "(1",
-    error: s => new SinosError(errorKinds.expectCloseParen, s(2, 0))
+    error: s => new SinosError(errorKinds.expectParenClose, s(2, 0))
   },
   {
     desc: "errors on missing name for let statement",
@@ -322,6 +322,129 @@ const testCases: TestCase[] = [
     desc: "errors on missing semicolon for let statement",
     input: "let a = 1",
     error: s => new SinosError(errorKinds.expectSemi, s(9, 0))
+  },
+  {
+    desc: "accepts empty blocks",
+    input: "{}",
+    output: `
+      module<0,2>
+        exprStmt<0,2>
+          block<0,2>
+    `
+  },
+  {
+    desc: "accepts a block with a semicolon",
+    input: "{};",
+    output: `
+      module<0,3>
+        exprStmt<0,3>
+          block<0,2>
+    `
+  },
+  {
+    desc: "accepts a block with a single statement",
+    input: "{ 1; }",
+    output: `
+      module<0,6>
+        exprStmt<0,6>
+          block<0,6>
+            exprStmt<2,2>
+              integer<2,1> 1
+    `
+  },
+  {
+    desc: "accepts a block with multiple statements",
+    input: "{ let a = 1; a; 4 * 4; }",
+    output: `
+      module<0,24>
+        exprStmt<0,24>
+          block<0,24>
+            letStmt<2,10> "a"
+              integer<10,1> 1
+            exprStmt<13,2>
+              name<13,1> a
+            exprStmt<16,6>
+              binary<16,5> *
+                integer<16,1> 4
+                integer<20,1> 4
+    `
+  },
+  {
+    desc: "accepts a block with a single last expression",
+    input: "{ 1 }",
+    output: `
+      module<0,5>
+        exprStmt<0,5>
+          block<0,5>
+            integer<2,1> 1
+    `
+  },
+  {
+    desc: "accepts a block with a statement and a last expression",
+    input: "{ true; false }",
+    output: `
+      module<0,15>
+        exprStmt<0,15>
+          block<0,15>
+            exprStmt<2,5>
+              boolean<2,4> true
+            boolean<8,5> false
+    `
+  },
+  {
+    desc: "accepts a block with a last expression that is a block",
+    input: "{ { 1 } }",
+    output: `
+      module<0,9>
+        exprStmt<0,9>
+          block<0,9>
+            block<2,5>
+              integer<4,1> 1
+    `
+  },
+  {
+    desc: "accepts a block with multiple blocks inside it",
+    input: "{ { 1 } { 2 } }",
+    output: `
+      module<0,15>
+        exprStmt<0,15>
+          block<0,15>
+            exprStmt<2,5>
+              block<2,5>
+                integer<4,1> 1
+            block<8,5>
+              integer<10,1> 2
+    `
+  },
+  {
+    desc: "accepts a block with multiple blocks and statements inside it",
+    input: "{ { a; } 1 + 2; { b }; }",
+    output: `
+      module<0,24>
+        exprStmt<0,24>
+          block<0,24>
+            exprStmt<2,6>
+              block<2,6>
+                exprStmt<4,2>
+                  name<4,1> a
+            exprStmt<9,6>
+              binary<9,5> +
+                integer<9,1> 1
+                integer<13,1> 2
+            exprStmt<16,6>
+              block<16,5>
+                name<18,1> b
+    `
+  },
+  {
+    desc: "errors on unclosed blocks",
+    input: "{ 1; ",
+    error: s => new SinosError(errorKinds.expectBraceClose, s(5, 0))
+  },
+  {
+    desc: "errors on statements missing a semicolon",
+    input: "{ 1 2 }",
+    error: s => new SinosError(errorKinds.expectSemi, s(4, 1))
   }
 ];
 
@@ -396,6 +519,24 @@ function printAst(ast: Ast): string {
       const expr = indented(printAst(ast.expr));
 
       result += `\n${expr}`;
+      break;
+    }
+
+    case "block": {
+      if (ast.stmts.length > 0) {
+        const stmts = ast.stmts
+          .map(stmt => indented(printAst(stmt)))
+          .join("\n");
+
+        result += `\n${stmts}`;
+      }
+
+      if (ast.lastExpr) {
+        const lastExpr = indented(printAst(ast.lastExpr));
+
+        result += `\n${lastExpr}`;
+      }
+
       break;
     }
 

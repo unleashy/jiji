@@ -24,6 +24,7 @@ export interface AstExprStmt extends AstCommon<"exprStmt"> {
 }
 
 export type AstExpr =
+  | AstBlock
   | AstBinary
   | AstUnary
   | AstGroup
@@ -32,6 +33,11 @@ export type AstExpr =
   | AstFloat
   | AstString
   | AstBoolean;
+
+export interface AstBlock extends AstCommon<"block"> {
+  stmts: AstStmt[];
+  lastExpr: AstExpr | undefined;
+}
 
 export type BasicOp = "+" | "-" | "*" | "/" | "%" | "~";
 export type OrderingOp = "<" | "<=" | ">" | ">=";
@@ -97,6 +103,17 @@ export const ast = {
   exprStmt: (expr: AstExpr, span: Span): AstExprStmt => ({
     kind: "exprStmt",
     expr,
+    span
+  }),
+
+  block: (
+    stmts: AstStmt[],
+    lastExpr: AstExpr | undefined,
+    span: Span
+  ): AstBlock => ({
+    kind: "block",
+    stmts,
+    lastExpr,
     span
   }),
 
