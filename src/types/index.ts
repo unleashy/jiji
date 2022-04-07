@@ -10,6 +10,8 @@ import {
   AstName,
   AstUnary
 } from "../ast";
+import { Environment } from "../scope";
+import * as assert from "assert";
 
 export * from "./common";
 
@@ -22,8 +24,12 @@ export const types = {
 };
 
 export class Types {
-  private bindings = new Map<string, Type>();
+  readonly env: Environment;
   private typeOfCache = new WeakMap<Ast, Type>();
+
+  constructor(environment: Environment) {
+    this.env = environment;
+  }
 
   typeOf(ast: Ast): Type {
     let result = this.typeOfCache.get(ast);
@@ -69,6 +75,9 @@ export class Types {
 
       case "string":
         return types.String;
+
+      default:
+        throw new Error("todo");
     }
   }
 
@@ -94,12 +103,12 @@ export class Types {
       }
     }
 
-    this.bindings.set(ast.name, inferredType);
+    this.env.getScope(ast).assignTypeToBinding(ast.name, inferredType);
 
     return types.Unit;
   }
 
-  private typeOfExprStmt(ast: AstExprStmt) {
+  private typeOfExprStmt(ast: AstExprStmt): Type {
     this.typeOf(ast.expr);
 
     return types.Unit;
@@ -147,7 +156,7 @@ export class Types {
     }
   }
 
-  private typeOfUnary(ast: AstUnary) {
+  private typeOfUnary(ast: AstUnary): Type {
     const exprType = this.typeOf(ast.expr);
     const result = exprType.applyUnaryOp(ast.op);
     if (result === undefined) {
@@ -160,16 +169,13 @@ export class Types {
     return result;
   }
 
-  private typeOfName(ast: AstName) {
-    const type = this.typeOfBinding(ast.value);
-    if (type) {
-      return type;
-    } else {
-      throw new SinosError(errorKinds.unknownBinding(ast.value), ast.span);
-    }
-  }
+  private typeOfName(ast: AstName): Type {
+    const binding = this.env.getScope(ast).getBinding(ast.value);
+    assert.ok(binding, `resolver should have resolved binding ${ast.value}!`);
 
-  typeOfBinding(name: string): Type | undefined {
-    return this.bindings.get(name);
+    const type = binding.type;
+    assert.ok(type, `type of ${ast.value} should have been determined!`);
+
+    return type;
   }
 }

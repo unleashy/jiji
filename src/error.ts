@@ -43,7 +43,11 @@ export const errorKinds = Object.freeze({
   unknownType: (typeName: string) =>
     errorKind({ name: "unknownType", typeName }),
   unknownBinding: (bindingName: string) =>
-    errorKind({ name: "unknownBinding", bindingName })
+    errorKind({ name: "unknownBinding", bindingName }),
+  ifCondNotBool: (actualType: Type) =>
+    errorKind({ name: "ifCondNotBool", actualType }),
+  ifTypeMismatch: (actualType: Type, expectedType: Type) =>
+    errorKind({ name: "ifTypeMismatch", actualType, expectedType })
 });
 
 type KindType<K> = K extends (...args: never[]) => unknown ? ReturnType<K> : K;
@@ -147,6 +151,19 @@ export class SinosError extends Error {
 
       case "unknownBinding":
         return `Cannot find name "${this.errorKind.bindingName}"`;
+
+      case "ifCondNotBool":
+        return (
+          `The type of an if condition must be Bool, but this condition is ` +
+          `of type ${this.errorKind.actualType.name}`
+        );
+
+      case "ifTypeMismatch":
+        return (
+          `Expected a value of type ${this.errorKind.expectedType.name}, ` +
+          `since the type of the first branch of the if expression is ` +
+          this.errorKind.expectedType.name
+        );
     }
   }
 }

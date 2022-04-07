@@ -2,6 +2,7 @@ import * as fs from "fs/promises";
 import { File } from "./file";
 import { Lexer } from "./lexer";
 import { Parser } from "./parser";
+import { Resolver } from "./scope";
 import { Types } from "./types";
 import { Codegen } from "./codegen";
 
@@ -16,12 +17,11 @@ export async function compileFile(path: string): Promise<string> {
 }
 
 function compileImpl(file: File): string {
-  const lexer = new Lexer(file);
-  const parser = new Parser(lexer);
+  const ast = new Parser(new Lexer(file)).parse();
 
-  const ast = parser.parse();
+  const env = new Resolver().resolve(ast);
 
-  const types = new Types();
+  const types = new Types(env);
   types.typeOf(ast); // typecheck
 
   return new Codegen(types).generate(ast);

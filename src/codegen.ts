@@ -39,6 +39,10 @@ export class Codegen {
 
   private genExpr(expr: AstExpr): string {
     switch (expr.kind) {
+      case "block":
+      case "if":
+        throw new Error("todo");
+
       case "binary": {
         const left = this.genExpr(expr.left);
         const right = this.genExpr(expr.right);

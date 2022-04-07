@@ -200,10 +200,6 @@ export class Parser {
   }
 }
 
-function todo(): never {
-  throw new Error("todo");
-}
-
 // noinspection JSUnusedGlobalSymbols
 enum Precedence {
   none,
