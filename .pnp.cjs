@@ -17,14 +17,14 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
     ],\
     "dependencyTreeRoots": [\
       {\
-        "name": "sinos",\
+        "name": "jiji",\
         "reference": "workspace:."\
       }\
     ],\
     "enableTopLevelFallback": true,\
     "ignorePatternData": "(^(?:\\\\.yarn\\\\/sdks(?:\\\\/(?!\\\\.{1,2}(?:\\\\/|$))(?:(?:(?!(?:^|\\\\/)\\\\.{1,2}(?:\\\\/|$)).)*?)|$))$)",\
     "fallbackExclusionList": [\
-      ["sinos", ["workspace:."]]\
+      ["jiji", ["workspace:."]]\
     ],\
     "fallbackPool": [\
     ],\
@@ -34,14 +34,14 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./",\
           "packageDependencies": [\
             ["@parcel/packager-ts", "npm:2.4.0"],\
-            ["@parcel/transformer-typescript-types", "virtual:a3a553be574fa67c9ad186ff5b538624a3ce363fe5ac33fdfa07b5739520b04596e4dec2f633aa497faa2974b45345a3861fa75046d49f62d4b9550d1393ecb6#npm:2.4.0"],\
+            ["@parcel/transformer-typescript-types", "virtual:40f4b67a82bdea53e74c2d9b880daeae8a57a5a3238012dfe10bba1fac58c0c690b1688e3041d4b2ad58314c1deee7b364c3a58e941879d9f52dcfc9d883fa6d#npm:2.4.0"],\
             ["@types/node", "npm:17.0.23"],\
             ["c8", "npm:7.11.0"],\
             ["parcel", "npm:2.4.0"],\
             ["prettier", "npm:2.6.0"],\
             ["sade", "npm:1.8.1"],\
             ["ts-dedent", "npm:2.2.0"],\
-            ["ts-node", "virtual:a3a553be574fa67c9ad186ff5b538624a3ce363fe5ac33fdfa07b5739520b04596e4dec2f633aa497faa2974b45345a3861fa75046d49f62d4b9550d1393ecb6#npm:10.7.0"],\
+            ["ts-node", "virtual:40f4b67a82bdea53e74c2d9b880daeae8a57a5a3238012dfe10bba1fac58c0c690b1688e3041d4b2ad58314c1deee7b364c3a58e941879d9f52dcfc9d883fa6d#npm:10.7.0"],\
             ["typescript", "patch:typescript@npm%3A4.6.2#~builtin<compat/typescript>::version=4.6.2&hash=bda367"],\
             ["uvu", "npm:0.5.3"]\
           ],\
@@ -1014,14 +1014,14 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           ],\
           "linkType": "SOFT"\
         }],\
-        ["virtual:a3a553be574fa67c9ad186ff5b538624a3ce363fe5ac33fdfa07b5739520b04596e4dec2f633aa497faa2974b45345a3861fa75046d49f62d4b9550d1393ecb6#npm:2.4.0", {\
-          "packageLocation": "./.yarn/__virtual__/@parcel-transformer-typescript-types-virtual-90cc567303/0/cache/@parcel-transformer-typescript-types-npm-2.4.0-6e01139436-133396bb8b.zip/node_modules/@parcel/transformer-typescript-types/",\
+        ["virtual:40f4b67a82bdea53e74c2d9b880daeae8a57a5a3238012dfe10bba1fac58c0c690b1688e3041d4b2ad58314c1deee7b364c3a58e941879d9f52dcfc9d883fa6d#npm:2.4.0", {\
+          "packageLocation": "./.yarn/__virtual__/@parcel-transformer-typescript-types-virtual-c6025e7ad6/0/cache/@parcel-transformer-typescript-types-npm-2.4.0-6e01139436-133396bb8b.zip/node_modules/@parcel/transformer-typescript-types/",\
           "packageDependencies": [\
-            ["@parcel/transformer-typescript-types", "virtual:a3a553be574fa67c9ad186ff5b538624a3ce363fe5ac33fdfa07b5739520b04596e4dec2f633aa497faa2974b45345a3861fa75046d49f62d4b9550d1393ecb6#npm:2.4.0"],\
+            ["@parcel/transformer-typescript-types", "virtual:40f4b67a82bdea53e74c2d9b880daeae8a57a5a3238012dfe10bba1fac58c0c690b1688e3041d4b2ad58314c1deee7b364c3a58e941879d9f52dcfc9d883fa6d#npm:2.4.0"],\
             ["@parcel/diagnostic", "npm:2.4.0"],\
             ["@parcel/plugin", "npm:2.4.0"],\
             ["@parcel/source-map", "npm:2.0.2"],\
-            ["@parcel/ts-utils", "virtual:90cc567303571f2315e42d666537295031075da430c4df0feac21532cfccee0fbcd106c853e717ae463f12e0e9b01f07f3dca9c285c6a5d7e5e41bad1904fb75#npm:2.4.0"],\
+            ["@parcel/ts-utils", "virtual:c6025e7ad68537d4933a9533bae4531fc815735727c1521f8a3fc942b4d9b95bfe8495b4c31c668dcc2a021b8955235b0157910f1fe163a871b3ddd19dcf9bc3#npm:2.4.0"],\
             ["@types/typescript", null],\
             ["nullthrows", "npm:1.1.1"],\
             ["typescript", "patch:typescript@npm%3A4.6.2#~builtin<compat/typescript>::version=4.6.2&hash=bda367"]\
@@ -1041,10 +1041,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           ],\
           "linkType": "SOFT"\
         }],\
-        ["virtual:90cc567303571f2315e42d666537295031075da430c4df0feac21532cfccee0fbcd106c853e717ae463f12e0e9b01f07f3dca9c285c6a5d7e5e41bad1904fb75#npm:2.4.0", {\
-          "packageLocation": "./.yarn/__virtual__/@parcel-ts-utils-virtual-602be81334/0/cache/@parcel-ts-utils-npm-2.4.0-128c66b321-4022d5d089.zip/node_modules/@parcel/ts-utils/",\
+        ["virtual:c6025e7ad68537d4933a9533bae4531fc815735727c1521f8a3fc942b4d9b95bfe8495b4c31c668dcc2a021b8955235b0157910f1fe163a871b3ddd19dcf9bc3#npm:2.4.0", {\
+          "packageLocation": "./.yarn/__virtual__/@parcel-ts-utils-virtual-a60ccb51fe/0/cache/@parcel-ts-utils-npm-2.4.0-128c66b321-4022d5d089.zip/node_modules/@parcel/ts-utils/",\
           "packageDependencies": [\
-            ["@parcel/ts-utils", "virtual:90cc567303571f2315e42d666537295031075da430c4df0feac21532cfccee0fbcd106c853e717ae463f12e0e9b01f07f3dca9c285c6a5d7e5e41bad1904fb75#npm:2.4.0"],\
+            ["@parcel/ts-utils", "virtual:c6025e7ad68537d4933a9533bae4531fc815735727c1521f8a3fc942b4d9b95bfe8495b4c31c668dcc2a021b8955235b0157910f1fe163a871b3ddd19dcf9bc3#npm:2.4.0"],\
             ["@types/typescript", null],\
             ["nullthrows", "npm:1.1.1"],\
             ["typescript", "patch:typescript@npm%3A4.6.2#~builtin<compat/typescript>::version=4.6.2&hash=bda367"]\
@@ -2357,6 +2357,26 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD"\
         }]\
       ]],\
+      ["jiji", [\
+        ["workspace:.", {\
+          "packageLocation": "./",\
+          "packageDependencies": [\
+            ["jiji", "workspace:."],\
+            ["@parcel/packager-ts", "npm:2.4.0"],\
+            ["@parcel/transformer-typescript-types", "virtual:40f4b67a82bdea53e74c2d9b880daeae8a57a5a3238012dfe10bba1fac58c0c690b1688e3041d4b2ad58314c1deee7b364c3a58e941879d9f52dcfc9d883fa6d#npm:2.4.0"],\
+            ["@types/node", "npm:17.0.23"],\
+            ["c8", "npm:7.11.0"],\
+            ["parcel", "npm:2.4.0"],\
+            ["prettier", "npm:2.6.0"],\
+            ["sade", "npm:1.8.1"],\
+            ["ts-dedent", "npm:2.2.0"],\
+            ["ts-node", "virtual:40f4b67a82bdea53e74c2d9b880daeae8a57a5a3238012dfe10bba1fac58c0c690b1688e3041d4b2ad58314c1deee7b364c3a58e941879d9f52dcfc9d883fa6d#npm:10.7.0"],\
+            ["typescript", "patch:typescript@npm%3A4.6.2#~builtin<compat/typescript>::version=4.6.2&hash=bda367"],\
+            ["uvu", "npm:0.5.3"]\
+          ],\
+          "linkType": "SOFT"\
+        }]\
+      ]],\
       ["js-tokens", [\
         ["npm:4.0.0", {\
           "packageLocation": "./.yarn/cache/js-tokens-npm-4.0.0-0ac852e9e2-8a95213a5a.zip/node_modules/js-tokens/",\
@@ -3147,26 +3167,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD"\
         }]\
       ]],\
-      ["sinos", [\
-        ["workspace:.", {\
-          "packageLocation": "./",\
-          "packageDependencies": [\
-            ["sinos", "workspace:."],\
-            ["@parcel/packager-ts", "npm:2.4.0"],\
-            ["@parcel/transformer-typescript-types", "virtual:a3a553be574fa67c9ad186ff5b538624a3ce363fe5ac33fdfa07b5739520b04596e4dec2f633aa497faa2974b45345a3861fa75046d49f62d4b9550d1393ecb6#npm:2.4.0"],\
-            ["@types/node", "npm:17.0.23"],\
-            ["c8", "npm:7.11.0"],\
-            ["parcel", "npm:2.4.0"],\
-            ["prettier", "npm:2.6.0"],\
-            ["sade", "npm:1.8.1"],\
-            ["ts-dedent", "npm:2.2.0"],\
-            ["ts-node", "virtual:a3a553be574fa67c9ad186ff5b538624a3ce363fe5ac33fdfa07b5739520b04596e4dec2f633aa497faa2974b45345a3861fa75046d49f62d4b9550d1393ecb6#npm:10.7.0"],\
-            ["typescript", "patch:typescript@npm%3A4.6.2#~builtin<compat/typescript>::version=4.6.2&hash=bda367"],\
-            ["uvu", "npm:0.5.3"]\
-          ],\
-          "linkType": "SOFT"\
-        }]\
-      ]],\
       ["smart-buffer", [\
         ["npm:4.2.0", {\
           "packageLocation": "./.yarn/cache/smart-buffer-npm-4.2.0-5ac3f668bb-b5167a7142.zip/node_modules/smart-buffer/",\
@@ -3386,10 +3386,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           ],\
           "linkType": "SOFT"\
         }],\
-        ["virtual:a3a553be574fa67c9ad186ff5b538624a3ce363fe5ac33fdfa07b5739520b04596e4dec2f633aa497faa2974b45345a3861fa75046d49f62d4b9550d1393ecb6#npm:10.7.0", {\
-          "packageLocation": "./.yarn/__virtual__/ts-node-virtual-f66221d48e/0/cache/ts-node-npm-10.7.0-ef39b1d45e-2a379e43f7.zip/node_modules/ts-node/",\
+        ["virtual:40f4b67a82bdea53e74c2d9b880daeae8a57a5a3238012dfe10bba1fac58c0c690b1688e3041d4b2ad58314c1deee7b364c3a58e941879d9f52dcfc9d883fa6d#npm:10.7.0", {\
+          "packageLocation": "./.yarn/__virtual__/ts-node-virtual-0a33968aa3/0/cache/ts-node-npm-10.7.0-ef39b1d45e-2a379e43f7.zip/node_modules/ts-node/",\
           "packageDependencies": [\
-            ["ts-node", "virtual:a3a553be574fa67c9ad186ff5b538624a3ce363fe5ac33fdfa07b5739520b04596e4dec2f633aa497faa2974b45345a3861fa75046d49f62d4b9550d1393ecb6#npm:10.7.0"],\
+            ["ts-node", "virtual:40f4b67a82bdea53e74c2d9b880daeae8a57a5a3238012dfe10bba1fac58c0c690b1688e3041d4b2ad58314c1deee7b364c3a58e941879d9f52dcfc9d883fa6d#npm:10.7.0"],\
             ["@cspotcode/source-map-support", "npm:0.7.0"],\
             ["@swc/core", null],\
             ["@swc/wasm", null],\

@@ -1,7 +1,7 @@
 import { strict as assert } from "assert";
 import { Span } from "./span";
 import { File } from "./file";
-import { SinosError, errorKinds } from "./error";
+import { JijiError, errorKinds } from "./error";
 import { kinds, Token } from "./token";
 
 export class Lexer {
@@ -95,14 +95,14 @@ export class Lexer {
 
     if (this.source.match(".")) {
       if (!this.consumeDigits()) {
-        throw new SinosError(errorKinds.missingFrac, this.source.endSpan());
+        throw new JijiError(errorKinds.missingFrac, this.source.endSpan());
       }
     }
 
     if (this.source.match("e") || this.source.match("E")) {
       this.source.match("-") || this.source.match("+");
       if (!this.consumeDigits()) {
-        throw new SinosError(errorKinds.missingExp, this.source.endSpan());
+        throw new JijiError(errorKinds.missingExp, this.source.endSpan());
       }
     }
 
@@ -145,7 +145,7 @@ export class Lexer {
 
     // skip '; if at end then fail
     if (this.source.next() === undefined) {
-      throw new SinosError(errorKinds.unclosedString, this.source.endSpan());
+      throw new JijiError(errorKinds.unclosedString, this.source.endSpan());
     }
 
     const span = this.source.endSpan();
@@ -170,7 +170,7 @@ export class Lexer {
             break loop;
 
           case undefined:
-            throw new SinosError(
+            throw new JijiError(
               errorKinds.unclosedString,
               this.source.endSpan()
             );
@@ -203,7 +203,7 @@ export class Lexer {
       case "u": return this.nextUnicodeEscapeSeq();
     }
 
-    throw new SinosError(
+    throw new JijiError(
       errorKinds.unknownEscape(esc ?? ""),
       this.source.endSpan()
     );
@@ -211,7 +211,7 @@ export class Lexer {
 
   private nextUnicodeEscapeSeq(): string {
     if (!this.source.match("{")) {
-      throw new SinosError(errorKinds.uniEscMissingOpen, this.source.endSpan());
+      throw new JijiError(errorKinds.uniEscMissingOpen, this.source.endSpan());
     }
 
     let escapeText = "";
@@ -220,7 +220,7 @@ export class Lexer {
       if (c === "}") {
         break;
       } else if (c === undefined) {
-        throw new SinosError(
+        throw new JijiError(
           errorKinds.uniEscMissingClose,
           this.source.endSpan()
         );
@@ -230,13 +230,13 @@ export class Lexer {
     }
 
     if (!/^[A-Fa-f0-9]+$/.test(escapeText)) {
-      throw new SinosError(errorKinds.uniEscNotHex, this.source.endSpan());
+      throw new JijiError(errorKinds.uniEscNotHex, this.source.endSpan());
     }
 
     try {
       return String.fromCodePoint(Number.parseInt(escapeText, 16));
     } catch {
-      throw new SinosError(
+      throw new JijiError(
         errorKinds.uniEscInvalidCodePoint(escapeText),
         this.source.endSpan()
       );
@@ -277,7 +277,7 @@ export class Lexer {
         case undefined: return kinds.end;
 
         default:
-          throw new SinosError(errorKinds.unknownChar(c), this.source.endSpan());
+          throw new JijiError(errorKinds.unknownChar(c), this.source.endSpan());
       }
     })();
 

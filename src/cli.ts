@@ -1,7 +1,7 @@
 import sade from "sade";
 import pkg from "../package.json";
 import { compileFile } from "./index";
-import { SinosError } from "./error";
+import { JijiError } from "./error";
 
 function errCodeToMessage(
   e: { code: string; message: string },
@@ -30,7 +30,7 @@ async function runCode(path: string) {
   } catch (e: any) {
     if (e.code) {
       console.error("Error reading file:", errCodeToMessage(e, path));
-    } else if (e instanceof SinosError) {
+    } else if (e instanceof JijiError) {
       console.error(e.message);
     } else {
       throw e;
@@ -38,8 +38,8 @@ async function runCode(path: string) {
   }
 }
 
-sade("sinos <file>", true)
+sade("jiji <file>", true)
   .version(pkg.version)
-  .describe("Run a sinos file")
+  .describe("Run a Jiji file")
   .action(runCode)
   .parse(process.argv);

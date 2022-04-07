@@ -3,7 +3,7 @@ import * as assert from "uvu/assert";
 import dedent from "ts-dedent";
 import { File } from "../../src/file";
 import { Span } from "../../src/span";
-import { SinosError, errorKinds } from "../../src/error";
+import { JijiError, errorKinds } from "../../src/error";
 import { Lexer } from "../../src/lexer";
 import { Ast } from "../../src/ast";
 import { Parser } from "../../src/parser";
@@ -13,7 +13,7 @@ type TestCase =
   | {
       desc: string;
       input: string;
-      error: (makeSpan: (index: number, length: number) => Span) => SinosError;
+      error: (makeSpan: (index: number, length: number) => Span) => JijiError;
       only?: boolean;
     };
 
@@ -251,17 +251,17 @@ const testCases: TestCase[] = [
   {
     desc: "errors on chained equality operators (equals)",
     input: "1 == 2 == 3;",
-    error: s => new SinosError(errorKinds.eqChain, s(5, 6))
+    error: s => new JijiError(errorKinds.eqChain, s(5, 6))
   },
   {
     desc: "errors on chained equality operators (not equals)",
     input: "1 == 2 != 3;",
-    error: s => new SinosError(errorKinds.eqChain, s(5, 6))
+    error: s => new JijiError(errorKinds.eqChain, s(5, 6))
   },
   {
     desc: "errors on chained comparison operators",
     input: "1 < 2 <= 3;",
-    error: s => new SinosError(errorKinds.cmpChain, s(4, 6))
+    error: s => new JijiError(errorKinds.cmpChain, s(4, 6))
   },
   {
     desc: "accepts let statements",
@@ -286,42 +286,42 @@ const testCases: TestCase[] = [
   {
     desc: "errors on missing semicolon",
     input: "1",
-    error: s => new SinosError(errorKinds.expectSemi, s(1, 0))
+    error: s => new JijiError(errorKinds.expectSemi, s(1, 0))
   },
   {
     desc: "errors on missing input",
     input: "1 + ",
-    error: s => new SinosError(errorKinds.expectExpr, s(4, 0))
+    error: s => new JijiError(errorKinds.expectExpr, s(4, 0))
   },
   {
     desc: "errors on missing close parenthesis",
     input: "(1",
-    error: s => new SinosError(errorKinds.expectParenClose, s(2, 0))
+    error: s => new JijiError(errorKinds.expectParenClose, s(2, 0))
   },
   {
     desc: "errors on missing name for let statement",
     input: "let = 1;",
-    error: s => new SinosError(errorKinds.expectName, s(4, 1))
+    error: s => new JijiError(errorKinds.expectName, s(4, 1))
   },
   {
     desc: "errors on missing equals for let statement",
     input: "let a == 1;",
-    error: s => new SinosError(errorKinds.expectEqual, s(6, 2))
+    error: s => new JijiError(errorKinds.expectEqual, s(6, 2))
   },
   {
     desc: "errors on missing type after colon for let statement",
     input: "let a: = 1;",
-    error: s => new SinosError(errorKinds.expectName, s(7, 1))
+    error: s => new JijiError(errorKinds.expectName, s(7, 1))
   },
   {
     desc: "errors on missing expression for let statement",
     input: "let a = ;",
-    error: s => new SinosError(errorKinds.expectExpr, s(8, 1))
+    error: s => new JijiError(errorKinds.expectExpr, s(8, 1))
   },
   {
     desc: "errors on missing semicolon for let statement",
     input: "let a = 1",
-    error: s => new SinosError(errorKinds.expectSemi, s(9, 0))
+    error: s => new JijiError(errorKinds.expectSemi, s(9, 0))
   },
   {
     desc: "accepts empty blocks",
@@ -439,12 +439,12 @@ const testCases: TestCase[] = [
   {
     desc: "errors on unclosed blocks",
     input: "{ 1; ",
-    error: s => new SinosError(errorKinds.expectBraceClose, s(5, 0))
+    error: s => new JijiError(errorKinds.expectBraceClose, s(5, 0))
   },
   {
     desc: "errors on statements missing a semicolon",
     input: "{ 1 2 }",
-    error: s => new SinosError(errorKinds.expectSemi, s(4, 1))
+    error: s => new JijiError(errorKinds.expectSemi, s(4, 1))
   },
   {
     desc: "accepts an if",
@@ -535,27 +535,27 @@ const testCases: TestCase[] = [
   {
     desc: "errors on missing condition (on if)",
     input: "if { woops }",
-    error: s => new SinosError(errorKinds.expectExpr, s(3, 1))
+    error: s => new JijiError(errorKinds.expectExpr, s(3, 1))
   },
   {
     desc: "errors on missing condition (on elseif)",
     input: "if 1 {} else if { woops }",
-    error: s => new SinosError(errorKinds.expectExpr, s(16, 1))
+    error: s => new JijiError(errorKinds.expectExpr, s(16, 1))
   },
   {
     desc: "errors on missing block (on if)",
     input: "if 1",
-    error: s => new SinosError(errorKinds.expectBlock, s(4, 0))
+    error: s => new JijiError(errorKinds.expectBlock, s(4, 0))
   },
   {
     desc: "errors on missing block (on elseif)",
     input: "if 1 {} else if 1",
-    error: s => new SinosError(errorKinds.expectBlock, s(17, 0))
+    error: s => new JijiError(errorKinds.expectBlock, s(17, 0))
   },
   {
     desc: "errors on missing block (on else)",
     input: "if 1 {} else",
-    error: s => new SinosError(errorKinds.expectBlock, s(12, 0))
+    error: s => new JijiError(errorKinds.expectBlock, s(12, 0))
   },
   {
     desc: "accepts a block with a last expression that is an if",
@@ -603,7 +603,7 @@ for (const testCase of testCases) {
         );
       }
     } catch (e) {
-      if (e instanceof SinosError && "error" in testCase) {
+      if (e instanceof JijiError && "error" in testCase) {
         const expected = testCase.error(
           (index, length) => new Span(file, index, length)
         );

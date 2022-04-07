@@ -53,7 +53,7 @@ export const errorKinds = Object.freeze({
 type KindType<K> = K extends (...args: never[]) => unknown ? ReturnType<K> : K;
 export type ErrorKind = KindType<typeof errorKinds[keyof typeof errorKinds]>;
 
-export class SinosError extends Error {
+export class JijiError extends Error {
   constructor(readonly errorKind: ErrorKind, readonly span: Span) {
     super();
   }

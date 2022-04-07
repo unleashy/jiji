@@ -2,7 +2,7 @@ import { test } from "uvu";
 import * as assert from "uvu/assert";
 import { File } from "../../src/file";
 import { Span } from "../../src/span";
-import { SinosError, errorKinds } from "../../src/error";
+import { JijiError, errorKinds } from "../../src/error";
 import { Token, kinds } from "../../src/token";
 import { Lexer } from "../../src/lexer";
 
@@ -11,7 +11,7 @@ interface TestCase {
   input: string;
   output: (
     makeSpan: (index: number, length: number) => Span
-  ) => (Token | SinosError)[];
+  ) => (Token | JijiError)[];
   expectError?: boolean;
 }
 
@@ -34,7 +34,7 @@ const testCases: TestCase[] = [
   {
     desc: "fails on unknown character",
     input: "#",
-    output: s => [new SinosError(errorKinds.unknownChar("#"), s(0, 1))],
+    output: s => [new JijiError(errorKinds.unknownChar("#"), s(0, 1))],
     expectError: true
   },
   {
@@ -103,19 +103,19 @@ const testCases: TestCase[] = [
   {
     desc: "fails on missing fractional part",
     input: "123.",
-    output: s => [new SinosError(errorKinds.missingFrac, s(0, 4))],
+    output: s => [new JijiError(errorKinds.missingFrac, s(0, 4))],
     expectError: true
   },
   {
     desc: "fails on missing exponent part",
     input: "456e -",
-    output: s => [new SinosError(errorKinds.missingExp, s(0, 4))],
+    output: s => [new JijiError(errorKinds.missingExp, s(0, 4))],
     expectError: true
   },
   {
     desc: "fails on missing exponent part",
     input: "789E-_",
-    output: s => [new SinosError(errorKinds.missingExp, s(0, 5))],
+    output: s => [new JijiError(errorKinds.missingExp, s(0, 5))],
     expectError: true
   },
   {
@@ -152,50 +152,50 @@ const testCases: TestCase[] = [
   {
     desc: "fails for unclosed single-quoted string",
     input: `'aa`,
-    output: s => [new SinosError(errorKinds.unclosedString, s(0, 3))],
+    output: s => [new JijiError(errorKinds.unclosedString, s(0, 3))],
     expectError: true
   },
   {
     desc: "fails for unclosed double-quoted string",
     input: `"  hey`,
-    output: s => [new SinosError(errorKinds.unclosedString, s(0, 6))],
+    output: s => [new JijiError(errorKinds.unclosedString, s(0, 6))],
     expectError: true
   },
   {
     desc: "fails for unknown escape sequence",
     input: String.raw`"\m"`,
-    output: s => [new SinosError(errorKinds.unknownEscape("m"), s(1, 2))],
+    output: s => [new JijiError(errorKinds.unknownEscape("m"), s(1, 2))],
     expectError: true
   },
   {
     desc: "fails for end after escape sequence",
     input: `"\\`,
-    output: s => [new SinosError(errorKinds.unknownEscape(""), s(1, 1))],
+    output: s => [new JijiError(errorKinds.unknownEscape(""), s(1, 1))],
     expectError: true
   },
   {
     desc: "fails for missing open brace in unicode escapes",
     input: `"\\u41}"`,
-    output: s => [new SinosError(errorKinds.uniEscMissingOpen, s(1, 2))],
+    output: s => [new JijiError(errorKinds.uniEscMissingOpen, s(1, 2))],
     expectError: true
   },
   {
     desc: "fails for missing close brace in unicode escapes",
     input: `"\\u{41 `,
-    output: s => [new SinosError(errorKinds.uniEscMissingClose, s(1, 6))],
+    output: s => [new JijiError(errorKinds.uniEscMissingClose, s(1, 6))],
     expectError: true
   },
   {
     desc: "fails for non-hex characters in unicode escapes",
     input: `"\\u{abc-}"`,
-    output: s => [new SinosError(errorKinds.uniEscNotHex, s(1, 8))],
+    output: s => [new JijiError(errorKinds.uniEscNotHex, s(1, 8))],
     expectError: true
   },
   {
     desc: "fails for invalid code points in unicode escapes",
     input: `"\\u{FFFFFF}"`,
     output: s => [
-      new SinosError(errorKinds.uniEscInvalidCodePoint("FFFFFF"), s(1, 10))
+      new JijiError(errorKinds.uniEscInvalidCodePoint("FFFFFF"), s(1, 10))
     ],
     expectError: true
   },
@@ -236,7 +236,7 @@ for (const testCase of testCases) {
         actual.push(token);
         if (token.isEnd) break;
       } catch (e) {
-        if (testCase.expectError && e instanceof SinosError) {
+        if (testCase.expectError && e instanceof JijiError) {
           actual.push(e);
           break;
         } else {

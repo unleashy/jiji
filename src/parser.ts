@@ -1,5 +1,5 @@
 import { strict as assert } from "assert";
-import { ErrorKind, errorKinds, SinosError } from "./error";
+import { ErrorKind, errorKinds, JijiError } from "./error";
 import { Kind, Kinds, Token, TokenOfKind } from "./token";
 import { Lexer } from "./lexer";
 import {
@@ -50,20 +50,20 @@ export class Parser {
 
     const name = this.lexer.expectKind(
       "name",
-      badToken => new SinosError(errorKinds.expectName, badToken.span)
+      badToken => new JijiError(errorKinds.expectName, badToken.span)
     );
 
     let type = undefined;
     if (this.lexer.match("colon")) {
       type = this.lexer.expectKind(
         "name",
-        badToken => new SinosError(errorKinds.expectName, badToken.span)
+        badToken => new JijiError(errorKinds.expectName, badToken.span)
       );
     }
 
     this.lexer.expectKind(
       "equal",
-      badToken => new SinosError(errorKinds.expectEqual, badToken.span)
+      badToken => new JijiError(errorKinds.expectEqual, badToken.span)
     );
     const expr = this.expr();
     const semi = this.expectSemi();
@@ -106,7 +106,7 @@ export class Parser {
   private expectSemi(): TokenOfKind<"semi"> {
     return this.lexer.expectKind(
       "semi",
-      badToken => new SinosError(errorKinds.expectSemi, badToken.span)
+      badToken => new JijiError(errorKinds.expectSemi, badToken.span)
     );
   }
 
@@ -141,7 +141,7 @@ export class Parser {
         } else {
           this.lexer.expectKind(
             "semi",
-            badToken => new SinosError(errorKinds.expectSemi, badToken.span)
+            badToken => new JijiError(errorKinds.expectSemi, badToken.span)
           );
         }
       }
@@ -151,7 +151,7 @@ export class Parser {
 
     const braceClose = this.lexer.expectKind(
       "braceClose",
-      badToken => new SinosError(errorKinds.expectBraceClose, badToken.span)
+      badToken => new JijiError(errorKinds.expectBraceClose, badToken.span)
     );
 
     return ast.block(stmts, lastExpr, braceOpen.span.join(braceClose.span));
@@ -160,7 +160,7 @@ export class Parser {
   private expectBlockExpr(): AstBlock {
     const block = this.blockExpr();
     if (block === undefined) {
-      throw new SinosError(errorKinds.expectBlock, this.lexer.next().span);
+      throw new JijiError(errorKinds.expectBlock, this.lexer.next().span);
     }
 
     return block;
@@ -291,7 +291,7 @@ class PrecedenceParser {
       const prec = this.precedenceOf(token.kind.name);
       const right = this.parsePrecedence(prec);
       if (right.kind === "binary" && ops.includes(right.op)) {
-        throw new SinosError(errorKind(), right.span);
+        throw new JijiError(errorKind(), right.span);
       }
 
       return ast.binary(left, op, right, left.span.join(right.span));
@@ -350,7 +350,7 @@ class PrecedenceParser {
         const expr = this.parseExpr();
         const close = this.lexer.expectKind(
           "parenClose",
-          badToken => new SinosError(errorKinds.expectParenClose, badToken.span)
+          badToken => new JijiError(errorKinds.expectParenClose, badToken.span)
         );
         return ast.group(expr, token.span.join(close.span));
     }
@@ -362,7 +362,7 @@ class PrecedenceParser {
     const token = this.lexer.next();
     const prefix = this.prefixRules.get(token.kind.name);
     if (prefix === undefined) {
-      throw new SinosError(errorKinds.expectExpr, token.span);
+      throw new JijiError(errorKinds.expectExpr, token.span);
     }
 
     let left = prefix.call(this, token);
@@ -443,7 +443,7 @@ class PeekableLexer {
 
   expectKind<K extends keyof Kinds>(
     kind: K,
-    makeErr: (badToken: Token) => SinosError
+    makeErr: (badToken: Token) => JijiError
   ): TokenOfKind<K> {
     const token = this.next();
     if (token.kind.name === kind) {

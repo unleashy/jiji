@@ -55,11 +55,11 @@ export class Bool extends Type {
   }
 }
 
-export class TyString extends Type {
+export class Strinji extends Type {
   name = "String";
 
   override applyBinaryOp(op: BasicOp, rhs: Type): Type | undefined {
-    if (op === "~" && rhs instanceof TyString) {
+    if (op === "~" && rhs instanceof Strinji) {
       return this;
     }
   }

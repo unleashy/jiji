@@ -1,26 +1,26 @@
-# sinos
+# Jiji
 
-small programming language that compiles to JS
+Small programming language that compiles to JS
 
-## todo list
+## To-do list
 
 - [x] variables (with and without type inference)
 - [x] more primitive types
   - [x] float
   - [x] string
 - [x] string concatenation
+- [~] block scopes
 - [~] conditionals (if)
 - [ ] && and ||
 - [ ] hex int literal
-- [ ] block scopes
 - [ ] functions
 - [ ] loops (tail call elimination?)
 - [ ] composite types (tuples, records, variants)
 - [ ] pattern matching
 
-## grammar
+## Grammar
 
-in PEG form:
+In PEG form:
 
 ```text
 Module ← Stmt* End
@@ -86,4 +86,4 @@ End ← !.
 
 ## licence
 
-[mit](LICENSE.txt)
+[MIT.](LICENSE.txt)

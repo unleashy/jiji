@@ -1,6 +1,6 @@
-import { errorKinds, SinosError } from "../error";
+import { errorKinds, JijiError } from "../error";
 import { Type } from "./common";
-import { Bool, Int, Float, Unit, TyString } from "./primitives";
+import { Bool, Int, Float, Unit, Strinji } from "./primitives";
 import {
   Ast,
   AstBinary,
@@ -20,7 +20,7 @@ export const types = {
   Int: new Int(),
   Float: new Float(),
   Bool: new Bool(),
-  String: new TyString()
+  String: new Strinji()
 };
 
 export class Types {
@@ -94,9 +94,9 @@ export class Types {
     if (ast.type) {
       const ascribedType = (types as Record<string, Type>)[ast.type];
       if (ascribedType === undefined) {
-        throw new SinosError(errorKinds.unknownType(ast.type), ast.span);
+        throw new JijiError(errorKinds.unknownType(ast.type), ast.span);
       } else if (ascribedType !== inferredType) {
-        throw new SinosError(
+        throw new JijiError(
           errorKinds.letTypeMismatch(ascribedType, inferredType),
           ast.span
         );
@@ -122,7 +122,7 @@ export class Types {
       case "==":
       case "!=":
         if (leftType !== rightType) {
-          throw new SinosError(
+          throw new JijiError(
             errorKinds.binaryTypeMismatch(leftType, ast.op, rightType),
             ast.span
           );
@@ -135,7 +135,7 @@ export class Types {
       case ">":
       case ">=":
         if (!leftType.isOrderableAgainst(rightType)) {
-          throw new SinosError(
+          throw new JijiError(
             errorKinds.binaryTypeMismatch(leftType, ast.op, rightType),
             ast.span
           );
@@ -146,7 +146,7 @@ export class Types {
       default:
         const result = leftType.applyBinaryOp(ast.op, rightType);
         if (result === undefined) {
-          throw new SinosError(
+          throw new JijiError(
             errorKinds.binaryTypeMismatch(leftType, ast.op, rightType),
             ast.span
           );
@@ -160,7 +160,7 @@ export class Types {
     const exprType = this.typeOf(ast.expr);
     const result = exprType.applyUnaryOp(ast.op);
     if (result === undefined) {
-      throw new SinosError(
+      throw new JijiError(
         errorKinds.unaryTypeMismatch(ast.op, exprType),
         ast.span
       );

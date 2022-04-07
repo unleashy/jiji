@@ -3,7 +3,7 @@ import { suite } from "uvu";
 import * as assert from "uvu/assert";
 import { File } from "../../src/file";
 import { Span } from "../../src/span";
-import { SinosError, errorKinds } from "../../src/error";
+import { JijiError, errorKinds } from "../../src/error";
 import { types } from "../../src/types";
 import { Environment, Resolver, Scope } from "../../src/scope";
 import { useSpanForBuildingAst } from "../util";
@@ -105,7 +105,7 @@ resolverTest("errors on unknown names", () => {
     sut.resolve(theAst);
     assert.unreachable("did not throw");
   } catch (e) {
-    assert.equal(e, new SinosError(errorKinds.unknownBinding("woops"), span));
+    assert.equal(e, new JijiError(errorKinds.unknownBinding("woops"), span));
   }
 });
 

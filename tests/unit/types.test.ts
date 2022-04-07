@@ -2,17 +2,17 @@ import { test } from "uvu";
 import * as assert from "uvu/assert";
 import { File } from "../../src/file";
 import { Span } from "../../src/span";
-import { SinosError, errorKinds } from "../../src/error";
+import { JijiError, errorKinds } from "../../src/error";
 import { BasicOp, BinaryOp, OrderingOp } from "../../src/ast";
 import { Environment, Resolver } from "../../src/scope";
 import { Types, types } from "../../src/types";
 import { useSpanForBuildingAst } from "../util";
 
-function catchErr<T>(fn: () => T): T | SinosError {
+function catchErr<T>(fn: () => T): T | JijiError {
   try {
     return fn();
   } catch (e) {
-    if (e instanceof SinosError) {
+    if (e instanceof JijiError) {
       return e;
     } else {
       throw e;
@@ -104,7 +104,7 @@ test("negating works for Ints and Floats", () => {
       if (!err) {
         return ty;
       } else {
-        return new SinosError(errorKinds.unaryTypeMismatch("-", ty), span);
+        return new JijiError(errorKinds.unaryTypeMismatch("-", ty), span);
       }
     })
   );
@@ -129,7 +129,7 @@ test("plussing works for Ints and Floats", () => {
       if (!err) {
         return ty;
       } else {
-        return new SinosError(errorKinds.unaryTypeMismatch("+", ty), span);
+        return new JijiError(errorKinds.unaryTypeMismatch("+", ty), span);
       }
     })
   );
@@ -154,7 +154,7 @@ test("not-ing works for Bools", () => {
       if (!err) {
         return ty;
       } else {
-        return new SinosError(errorKinds.unaryTypeMismatch("!", ty), span);
+        return new JijiError(errorKinds.unaryTypeMismatch("!", ty), span);
       }
     })
   );
@@ -202,7 +202,7 @@ test("arithmetic with non-Ints/Floats is an error", () => {
     errors,
     ops.map(
       op =>
-        new SinosError(
+        new JijiError(
           errorKinds.binaryTypeMismatch(types.Bool, op, types.Bool),
           span
         )
@@ -227,7 +227,7 @@ test("concatenating non-Strings is an error", () => {
 
   assert.equal(
     err,
-    new SinosError(
+    new JijiError(
       errorKinds.binaryTypeMismatch(types.Int, "~", types.Bool),
       span
     )
@@ -276,7 +276,7 @@ test("comparing different types for equality is an error", () => {
     errors,
     ops.map(
       op =>
-        new SinosError(
+        new JijiError(
           errorKinds.binaryTypeMismatch(types.Int, op, types.Bool),
           span
         )
@@ -298,7 +298,7 @@ test("comparing non-Ints/Floats for order is an error", () => {
     errors,
     ops.map(
       op =>
-        new SinosError(
+        new JijiError(
           errorKinds.binaryTypeMismatch(types.Bool, op, types.Bool),
           span
         )
@@ -322,7 +322,7 @@ test("typechecking is done as deeply as possible", () => {
 
   assert.equal(
     error,
-    new SinosError(
+    new JijiError(
       errorKinds.binaryTypeMismatch(types.Int, "+", types.Bool),
       span
     )
@@ -351,7 +351,7 @@ test("the ascribed type of a let statement is checked against its inferred type"
 
   assert.equal(
     error,
-    new SinosError(errorKinds.letTypeMismatch(types.Int, types.Bool), span)
+    new JijiError(errorKinds.letTypeMismatch(types.Int, types.Bool), span)
   );
 });
 
@@ -364,7 +364,7 @@ test("the ascribed type of a let statement must exist", () => {
 
   assert.equal(
     error,
-    new SinosError(errorKinds.unknownType("Unpossible"), span)
+    new JijiError(errorKinds.unknownType("Unpossible"), span)
   );
 });
 

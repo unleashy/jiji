@@ -1,5 +1,5 @@
 import { strict as assert } from "assert";
-import { SinosError, errorKinds } from "./error";
+import { JijiError, errorKinds } from "./error";
 import { Type } from "./types";
 import { Ast, AstExpr, AstModule, AstStmt } from "./ast";
 
@@ -128,7 +128,7 @@ export class Resolver {
 
       case "name": {
         if (!scope.hasBinding(ast.value)) {
-          throw new SinosError(errorKinds.unknownBinding(ast.value), ast.span);
+          throw new JijiError(errorKinds.unknownBinding(ast.value), ast.span);
         }
       }
     }
