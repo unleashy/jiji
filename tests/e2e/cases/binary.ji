@@ -1,0 +1,4 @@
+1 + 2 % 2 - 3 * 4 / 5; -- log: -1
+6 > 7 == true;         -- log: false
+false != 10 >= 9;      -- log: true
+"foo" ~ "bar";         -- log: foobar

@@ -1,0 +1,6 @@
+!true;   -- log: false
+!false;  -- log: true
++50;     -- log: 50
+-50;     -- log: -50
+-1.2;    -- log: -1.2
++85.633; -- log: 85.633

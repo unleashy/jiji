@@ -1,0 +1,8 @@
+let foo = 999;
+foo; -- log: 999
+
+let foo: Bool = false;
+foo; -- log: false
+
+let food = "bread";
+food; -- log: bread

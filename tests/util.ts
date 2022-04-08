@@ -23,3 +23,16 @@ export function useSpanForBuildingAst(span: Span): SpannedAst {
     ])
   ) as SpannedAst;
 }
+
+export function execJiji(code: string): string[] {
+  const logs: string[] = [];
+
+  const fn = new Function("console", code);
+  fn({
+    log: (arg: unknown) => {
+      logs.push(String(arg));
+    }
+  });
+
+  return logs;
+}
