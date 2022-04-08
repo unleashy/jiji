@@ -31,7 +31,7 @@
   "scripts": {
     "watch": "parcel watch",
     "build": "parcel build",
-    "test": "yarn test:unit && yarn test:e2e",
+    "test": "uvu -r ts-node/register tests -i cases",
     "test:unit": "uvu -r ts-node/register tests/unit",
     "test:e2e": "uvu -r ts-node/register tests/e2e -i cases",
     "test:cov": "c8 --all --src=src --include=src -r text -r html yarn test",
