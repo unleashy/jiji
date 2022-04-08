@@ -23,9 +23,8 @@ export interface AstExprStmt extends AstCommon<"exprStmt"> {
   expr: AstExpr;
 }
 
-export type AstExpr =
-  | AstBlock
-  | AstIf
+export type AstExprWithBlock = AstBlock | AstIf;
+export type AstExprWithoutBlock =
   | AstBinary
   | AstUnary
   | AstGroup
@@ -35,7 +34,9 @@ export type AstExpr =
   | AstString
   | AstBoolean;
 
-export function isBlocky(expr: AstExpr): boolean {
+export type AstExpr = AstExprWithoutBlock | AstExprWithBlock;
+
+export function isBlocky(expr: AstExpr): expr is AstExprWithBlock {
   return expr.kind === "block" || expr.kind === "if";
 }
 

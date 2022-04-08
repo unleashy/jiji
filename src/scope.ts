@@ -4,31 +4,27 @@ import { Type } from "./types";
 import { Ast, AstExpr, AstModule, AstStmt } from "./ast";
 
 export interface Binding {
+  name: string;
   type: Type | undefined;
 }
 
 export class Scope {
-  readonly parent: Scope | undefined = undefined;
+  public readonly parent: Scope | undefined;
+  private readonly binding: Binding;
 
-  private readonly bindings = new Map<string, Binding>();
-
-  constructor(parent?: Scope) {
+  constructor(name: string, parent?: Scope) {
+    this.binding = { name, type: undefined };
     this.parent = parent;
   }
 
-  addUntypedBinding(name: string): void {
-    this.bindings.set(name, { type: undefined });
-  }
-
-  assignTypeToBinding(name: string, type: Type): void {
-    const binding = this.bindings.get(name);
-    assert.ok(binding, "trying to assign type to a non-existent binding");
-
-    binding.type = type;
+  assignType(type: Type): void {
+    this.binding.type = type;
   }
 
   getBinding(name: string): Readonly<Binding> | undefined {
-    return this.bindings.get(name) ?? this.parent?.getBinding(name);
+    return this.binding.name === name
+      ? this.binding
+      : this.parent?.getBinding(name);
   }
 
   hasBinding(name: string): boolean {
@@ -54,7 +50,7 @@ export class Environment {
 export class Resolver {
   resolve(ast: AstModule): Environment {
     const env = new Environment();
-    const globalScope = new Scope();
+    const globalScope = new Scope("");
 
     env.setScope(ast, globalScope);
 
@@ -71,11 +67,8 @@ export class Resolver {
       case "letStmt": {
         this.resolveExpr(env, scope, ast.value);
 
-        const letScope = scope.hasBinding(ast.name) ? new Scope(scope) : scope;
-        letScope.addUntypedBinding(ast.name);
-
+        const letScope = new Scope(ast.name, scope);
         env.setScope(ast, letScope);
-
         return letScope;
       }
 
@@ -91,7 +84,7 @@ export class Resolver {
 
     switch (ast.kind) {
       case "block": {
-        let currentScope = new Scope(scope);
+        let currentScope = scope;
         for (const stmt of ast.stmts) {
           currentScope = this.resolveStmt(env, currentScope, stmt);
         }

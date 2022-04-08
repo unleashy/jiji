@@ -15,36 +15,30 @@ const ast = useSpanForBuildingAst(span);
 const scopeTest = suite("Scope");
 
 scopeTest("manages bindings", () => {
-  const sut = new Scope();
+  const sut = new Scope("");
 
   assert.not.ok(sut.hasBinding("foo"));
   assert.not.ok(sut.getBinding("foo"));
 
-  sut.addUntypedBinding("foo");
+  const sut2 = new Scope("foo");
 
-  assert.ok(sut.hasBinding("foo"));
-  assert.equal(sut.getBinding("foo"), { type: undefined });
+  assert.ok(sut2.hasBinding("foo"));
+  assert.equal(sut2.getBinding("foo"), { name: "foo", type: undefined });
 });
 
 scopeTest("assigns types to bindings", () => {
-  const sut = new Scope();
+  const sut = new Scope("typed");
 
-  sut.addUntypedBinding("typed");
+  assert.equal(sut.getBinding("typed"), { name: "typed", type: undefined });
 
-  assert.equal(sut.getBinding("typed"), { type: undefined });
+  sut.assignType(types.Bool);
 
-  sut.assignTypeToBinding("typed", types.Bool);
-
-  assert.equal(sut.getBinding("typed"), { type: types.Bool });
+  assert.equal(sut.getBinding("typed"), { name: "typed", type: types.Bool });
 });
 
 scopeTest("looks at the parent when searching for bindings", () => {
-  const parent = new Scope();
-  const sut = new Scope(parent);
-
-  assert.not.ok(sut.hasBinding("inParent"));
-
-  parent.addUntypedBinding("inParent");
+  const parent = new Scope("inParent");
+  const sut = new Scope("other", parent);
 
   assert.ok(sut.hasBinding("inParent"));
 });
@@ -55,7 +49,7 @@ const envTest = suite("Environment");
 envTest("gets and sets scopes on Asts", () => {
   const sut = new Environment();
   const theAst = ast.integer(1);
-  const theScope = new Scope();
+  const theScope = new Scope("");
 
   sut.setScope(theAst, theScope);
   assert.is(sut.getScope(theAst), theScope);
@@ -73,14 +67,20 @@ envTest("errors if no scope exists for a given ast", () => {
 // Resolver
 const resolverTest = suite("Resolver");
 
-resolverTest("bindings at the module level are in the global scope", () => {
+resolverTest("let statements declare new scopes", () => {
   const sut = new Resolver();
 
-  const theAst = ast.module([ast.letStmt("a", undefined, ast.integer(1))]);
+  const theAst = ast.module([
+    ast.exprStmt(ast.string("before let")),
+    ast.letStmt("a", undefined, ast.integer(1)),
+    ast.exprStmt(ast.string("after let"))
+  ]);
   const env = sut.resolve(theAst);
 
-  const scope = env.getScope(theAst);
-  assert.equal(scope.getBinding("a"), { type: undefined });
+  const beforeLetScope = env.getScope(theAst.stmts[0]);
+  const afterLetScope = env.getScope(theAst.stmts[2]);
+  assert.equal(beforeLetScope.getBinding("a"), undefined);
+  assert.equal(afterLetScope.getBinding("a"), { name: "a", type: undefined });
 });
 
 resolverTest("bindings are resolved", () => {
@@ -93,7 +93,10 @@ resolverTest("bindings are resolved", () => {
   const env = sut.resolve(theAst);
 
   const scope = env.getScope(theAst.stmts[1]);
-  assert.equal(scope.getBinding("binding"), { type: undefined });
+  assert.equal(scope.getBinding("binding"), {
+    name: "binding",
+    type: undefined
+  });
 });
 
 resolverTest("errors on unknown names", () => {
@@ -109,43 +112,15 @@ resolverTest("errors on unknown names", () => {
   }
 });
 
-resolverTest("blocks declare a new scope", () => {
+resolverTest("blocks do not declare a new scope", () => {
   const sut = new Resolver();
 
   const theAst = ast.module([
-    ast.exprStmt(
-      ast.block(
-        [
-          ast.letStmt("scoped", undefined, ast.boolean(true)),
-          ast.exprStmt(ast.name("scoped"))
-        ],
-        undefined
-      )
-    )
-  ]);
-
-  // Mustn't throw because "scoped" *is* within scope ...
-  const env = sut.resolve(theAst);
-
-  // ... but it goes out of scope outside the block
-  assert.not(env.getScope(theAst).hasBinding("scoped"));
-});
-
-resolverTest("shadowing let statements create a new scope", () => {
-  const sut = new Resolver();
-  const theAst = ast.module([
-    ast.letStmt("shadowed", undefined, ast.integer(1)),
-    ast.letStmt("shadowed", undefined, ast.boolean(true)),
-    ast.exprStmt(ast.name("shadowed"))
+    ast.exprStmt(ast.block([ast.exprStmt(ast.integer(1))], undefined))
   ]);
   const env = sut.resolve(theAst);
 
-  const firstLetScope = env.getScope(theAst.stmts[0]);
-  const secondLetScope = env.getScope(theAst.stmts[1]);
-
-  assert.ok(firstLetScope.hasBinding("shadowed"));
-  assert.ok(secondLetScope.hasBinding("shadowed"));
-  assert.is(secondLetScope.parent, firstLetScope);
+  assert.is(env.getScope(theAst), env.getScope(theAst.stmts[0]));
 });
 
 scopeTest.run();

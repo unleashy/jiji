@@ -108,7 +108,7 @@ export class Types {
       }
     }
 
-    this.env.getScope(ast).assignTypeToBinding(ast.name, inferredType);
+    this.env.getScope(ast).assignType(inferredType);
 
     return types.Unit;
   }

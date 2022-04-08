@@ -407,7 +407,7 @@ test("the type of a binding is its previously declared type", () => {
   const result = catchErr(() => sut.typeOf(theAst));
 
   assert.equal(result, types.Unit);
-  assert.equal(env.getScope(theAst).getBinding("a")?.type, types.Int);
+  assert.equal(env.getScope(theAst.stmts[1]).getBinding("a")?.type, types.Int);
 });
 
 test("bindings are allowed to shadow", () => {
