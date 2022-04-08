@@ -4,7 +4,9 @@ import { Bool, Int, Float, Unit, Strinji } from "./primitives";
 import {
   Ast,
   AstBinary,
+  AstBlock,
   AstExprStmt,
+  AstIf,
   AstLetStmt,
   AstModule,
   AstName,
@@ -52,6 +54,12 @@ export class Types {
       case "exprStmt":
         return this.typeOfExprStmt(ast);
 
+      case "block":
+        return this.typeOfBlock(ast);
+
+      case "if":
+        return this.typeOfIf(ast);
+
       case "binary":
         return this.typeOfBinary(ast);
 
@@ -75,9 +83,6 @@ export class Types {
 
       case "string":
         return types.String;
-
-      default:
-        throw new Error("todo");
     }
   }
 
@@ -112,6 +117,41 @@ export class Types {
     this.typeOf(ast.expr);
 
     return types.Unit;
+  }
+
+  private typeOfBlock(ast: AstBlock): Type {
+    for (const stmt of ast.stmts) {
+      this.typeOf(stmt);
+    }
+
+    return ast.lastExpr ? this.typeOf(ast.lastExpr) : types.Unit;
+  }
+
+  private typeOfIf(ast: AstIf): Type {
+    const blockTypes = [];
+    for (const [cond, block] of ast.branches) {
+      const condType = this.typeOf(cond);
+      if (condType !== types.Bool) {
+        throw new JijiError(errorKinds.ifCondNotBool(condType), cond.span);
+      }
+
+      blockTypes.push(this.typeOf(block));
+    }
+
+    if (ast.elseBranch) {
+      blockTypes.push(this.typeOf(ast.elseBranch));
+    }
+
+    const expectedType = ast.elseBranch ? blockTypes[0] : types.Unit;
+    const wrongTypeI = blockTypes.findIndex(ty => expectedType !== ty);
+    if (wrongTypeI !== -1) {
+      throw new JijiError(
+        errorKinds.ifTypeMismatch(blockTypes[wrongTypeI], expectedType),
+        ast.branches[wrongTypeI][1].span
+      );
+    }
+
+    return expectedType;
   }
 
   private typeOfBinary(ast: AstBinary) {

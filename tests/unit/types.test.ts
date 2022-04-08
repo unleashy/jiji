@@ -428,4 +428,98 @@ test("bindings are allowed to shadow", () => {
   assert.equal(secondLetScope.getBinding("a")?.type, types.Int);
 });
 
+test("the type of a block without a last expression is Unit", () => {
+  const { sut } = setup();
+
+  const result = sut.typeOf(
+    ast.block([ast.exprStmt(ast.integer(1))], undefined)
+  );
+
+  assert.equal(result, types.Unit);
+});
+
+test("the type of a block with a last expression is the last expression's type", () => {
+  const { sut } = setup();
+
+  const result = sut.typeOf(ast.block([], ast.integer(1)));
+
+  assert.equal(result, types.Int);
+});
+
+test("blocks typecheck all of their contents", () => {
+  const { sut } = setup();
+
+  // must throw because block typechecks its contents and you can't negate
+  // a boolean
+  const err = catchErr(() =>
+    sut.typeOf(
+      ast.block([ast.exprStmt(ast.unary("-", ast.boolean(true)))], undefined)
+    )
+  );
+
+  assert.not.equal(err, types.Unit);
+});
+
+test("the type of an if is the type of all its blocks", () => {
+  const { sut } = setup();
+
+  const type = sut.typeOf(
+    ast.if(
+      [
+        [ast.boolean(true), ast.block([], ast.integer(5))],
+        [ast.boolean(false), ast.block([], ast.integer(42))]
+      ],
+      ast.block([], ast.integer(100))
+    )
+  );
+
+  assert.equal(type, types.Int);
+});
+
+test("errors if the type of an if condition isn't bool", () => {
+  const { sut } = setup();
+
+  const err = catchErr(() =>
+    sut.typeOf(ast.if([[ast.integer(1), ast.block([], undefined)]], undefined))
+  );
+
+  assert.equal(err, new JijiError(errorKinds.ifCondNotBool(types.Int), span));
+});
+
+test("the expected type of an if without an else is Unit", () => {
+  const { sut } = setup();
+
+  const err = catchErr(() =>
+    sut.typeOf(
+      ast.if([[ast.boolean(true), ast.block([], ast.integer(1))]], undefined)
+    )
+  );
+
+  assert.equal(
+    err,
+    new JijiError(errorKinds.ifTypeMismatch(types.Int, types.Unit), span)
+  );
+});
+
+test("errors if some branch of an if has a different type", () => {
+  const { sut } = setup();
+
+  const err = catchErr(() =>
+    sut.typeOf(
+      ast.if(
+        [
+          [ast.boolean(true), ast.block([], ast.string("if"))],
+          [ast.boolean(true), ast.block([], ast.boolean(false))]
+        ],
+        ast.block([], ast.string("else"))
+      )
+    )
+  );
+
+  assert.equal(
+    err,
+    new JijiError(errorKinds.ifTypeMismatch(types.Bool, types.String), span)
+  );
+});
+
 test.run();
