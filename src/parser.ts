@@ -22,7 +22,7 @@ export class Parser {
 
   constructor(lexer: Lexer) {
     this.lexer = new PeekableLexer(lexer);
-    this.precedenceParser = new PrecedenceParser(this.lexer);
+    this.precedenceParser = new PrecedenceParser(this, this.lexer);
   }
 
   parse(): AstModule {
@@ -242,12 +242,14 @@ const kindToUnaryOp: Readonly<Partial<Record<keyof Kinds, UnaryOp>>> =
   });
 
 class PrecedenceParser {
+  private readonly parser: Parser;
   private readonly lexer: PeekableLexer;
   private readonly prefixRules = new Map<keyof Kinds, PrefixRule<Kind>>();
   private readonly infixRules = new Map<keyof Kinds, InfixRule<Kind>>();
 
   // prettier-ignore
-  constructor(lexer: PeekableLexer) {
+  constructor(parser: Parser, lexer: PeekableLexer) {
+    this.parser = parser;
     this.lexer = lexer;
 
     this.prefixRule("name",      this.primary);
@@ -347,7 +349,7 @@ class PrecedenceParser {
         return ast.string(token.kind.value, token.span);
 
       case "parenOpen":
-        const expr = this.parseExpr();
+        const expr = this.parser["expr"](); // index usage to bypass privacy
         const close = this.lexer.expectKind(
           "parenClose",
           badToken => new JijiError(errorKinds.expectParenClose, badToken.span)

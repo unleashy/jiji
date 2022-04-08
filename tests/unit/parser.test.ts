@@ -581,6 +581,32 @@ const testCases: TestCase[] = [
                 boolean<5,4> true
                 block<10,2>
     `
+  },
+  {
+    desc: "blocks can be nested within parentheses",
+    input: "({ 1 });",
+    output: `
+      module<0,8>
+        exprStmt<0,8>
+          group<0,7>
+            block<1,5>
+              integer<3,1> 1
+    `
+  },
+  {
+    desc: "ifs can be nested within parentheses",
+    input: "(if true { 1 } else { 2 });",
+    output: `
+      module<0,27>
+        exprStmt<0,27>
+          group<0,26>
+            if<1,24>
+              boolean<4,4> true
+              block<9,5>
+                integer<11,1> 1
+              block<20,5>
+                integer<22,1> 2
+    `
   }
 ];
 
