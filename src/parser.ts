@@ -170,29 +170,16 @@ export class Parser {
     const if_ = this.lexer.match("if");
     if (if_ === undefined) return undefined;
 
-    const branches: AstIf["branches"] = [];
-    let elseBranch;
-    while (true) {
-      const cond = this.exprWithoutBlock();
-      const block = this.expectBlockExpr();
+    const condition = this.exprWithoutBlock();
+    const consequent = this.expectBlockExpr();
 
-      branches.push([cond, block]);
-
-      if (this.lexer.match("else")) {
-        if (this.lexer.match("if")) {
-          continue;
-        }
-
-        elseBranch = this.expectBlockExpr();
-      }
-
-      break;
+    let alternate;
+    if (this.lexer.match("else")) {
+      alternate = this.ifExpr() || this.expectBlockExpr();
     }
 
-    const span = if_.span.join(
-      elseBranch ? elseBranch.span : branches[branches.length - 1][1].span
-    );
-    return ast.if(branches, elseBranch, span);
+    const span = if_.span.join(alternate ? alternate.span : consequent.span);
+    return ast.if(condition, consequent, alternate, span);
   }
 
   private exprWithoutBlock(): AstExpr {

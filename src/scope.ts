@@ -97,14 +97,9 @@ export class Resolver {
       }
 
       case "if": {
-        for (const [cond, block] of ast.branches) {
-          this.resolveExpr(env, scope, cond);
-          this.resolveExpr(env, scope, block);
-        }
-
-        if (ast.elseBranch) {
-          this.resolveExpr(env, scope, ast.elseBranch);
-        }
+        this.resolveExpr(env, scope, ast.condition);
+        this.resolveExpr(env, scope, ast.consequent);
+        if (ast.alternate) this.resolveExpr(env, scope, ast.alternate);
 
         break;
       }

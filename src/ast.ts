@@ -46,8 +46,9 @@ export interface AstBlock extends AstCommon<"block"> {
 }
 
 export interface AstIf extends AstCommon<"if"> {
-  branches: [AstExpr, AstBlock][];
-  elseBranch: AstBlock | undefined;
+  condition: AstExpr;
+  consequent: AstBlock;
+  alternate: AstBlock | AstIf | undefined;
 }
 
 export type BasicOp = "+" | "-" | "*" | "/" | "%" | "~";
@@ -129,13 +130,15 @@ export const ast = {
   }),
 
   if: (
-    branches: [AstExpr, AstBlock][],
-    elseBranch: AstBlock | undefined,
+    condition: AstExpr,
+    consequent: AstBlock,
+    alternate: AstBlock | AstIf | undefined,
     span: Span
   ): AstIf => ({
     kind: "if",
-    branches,
-    elseBranch,
+    condition,
+    consequent,
+    alternate,
     span
   }),
 

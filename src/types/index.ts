@@ -128,30 +128,35 @@ export class Types {
   }
 
   private typeOfIf(ast: AstIf): Type {
-    const blockTypes = [];
-    for (const [cond, block] of ast.branches) {
-      const condType = this.typeOf(cond);
-      if (condType !== types.Bool) {
-        throw new JijiError(errorKinds.ifCondNotBool(condType), cond.span);
-      }
-
-      blockTypes.push(this.typeOf(block));
-    }
-
-    if (ast.elseBranch) {
-      blockTypes.push(this.typeOf(ast.elseBranch));
-    }
-
-    const expectedType = ast.elseBranch ? blockTypes[0] : types.Unit;
-    const wrongTypeI = blockTypes.findIndex(ty => expectedType !== ty);
-    if (wrongTypeI !== -1) {
+    const condType = this.typeOf(ast.condition);
+    if (condType !== types.Bool) {
       throw new JijiError(
-        errorKinds.ifTypeMismatch(blockTypes[wrongTypeI], expectedType),
-        ast.branches[wrongTypeI][1].span
+        errorKinds.ifCondNotBool(condType),
+        ast.condition.span
       );
     }
 
-    return expectedType;
+    const consequentType = this.typeOf(ast.consequent);
+    if (ast.alternate) {
+      const alternateType = this.typeOf(ast.alternate);
+      if (consequentType !== alternateType) {
+        throw new JijiError(
+          errorKinds.ifTypeMismatch(alternateType, consequentType),
+          ast.alternate.span
+        );
+      }
+
+      return consequentType;
+    } else {
+      if (consequentType !== types.Unit) {
+        throw new JijiError(
+          errorKinds.ifTypeMismatch(consequentType, types.Unit),
+          ast.consequent.span
+        );
+      }
+
+      return types.Unit;
+    }
   }
 
   private typeOfBinary(ast: AstBinary) {

@@ -485,11 +485,12 @@ const testCases: TestCase[] = [
               integer<7,1> 2
             block<9,9>
               boolean<11,5> false
-            binary<27,5> +
-              integer<27,1> 5
-              integer<31,1> 6
-            block<33,8>
-              boolean<35,4> true
+            if<24,17>
+              binary<27,5> +
+                integer<27,1> 5
+                integer<31,1> 6
+              block<33,8>
+                boolean<35,4> true
     `
   },
   {
@@ -502,11 +503,12 @@ const testCases: TestCase[] = [
             name<3,4> good
             block<8,7>
               name<10,3> bad
-            name<24,6> medium
-            block<31,10>
-              name<33,6> medium
-            block<47,8>
-              name<49,4> good
+            if<21,34>
+              name<24,6> medium
+              block<31,10>
+                name<33,6> medium
+              block<47,8>
+                name<49,4> good
     `
   },
   {
@@ -519,17 +521,20 @@ const testCases: TestCase[] = [
             integer<3,1> 1
             block<5,5>
               integer<7,1> 2
-            integer<19,1> 3
-            block<21,5>
-              integer<23,1> 4
-            integer<35,1> 5
-            block<37,5>
-              integer<39,1> 6
-            integer<51,1> 7
-            block<53,5>
-              integer<55,1> 8
-            block<64,5>
-              integer<66,1> 9
+            if<16,53>
+              integer<19,1> 3
+              block<21,5>
+                integer<23,1> 4
+              if<32,37>
+                integer<35,1> 5
+                block<37,5>
+                  integer<39,1> 6
+                if<48,21>
+                  integer<51,1> 7
+                  block<53,5>
+                    integer<55,1> 8
+                  block<64,5>
+                    integer<66,1> 9
     `
   },
   {
@@ -703,18 +708,15 @@ function printAst(ast: Ast): string {
     }
 
     case "if": {
-      const branches = ast.branches
-        .map(([expr, block]) =>
-          indented(printAst(expr) + "\n" + printAst(block))
-        )
-        .join("\n");
+      const condition = indented(printAst(ast.condition));
+      const consequent = indented(printAst(ast.consequent));
 
-      result += `\n${branches}`;
+      result += `\n${condition}\n${consequent}`;
 
-      if (ast.elseBranch) {
-        const elseBranch = indented(printAst(ast.elseBranch));
+      if (ast.alternate) {
+        const alternate = indented(printAst(ast.alternate));
 
-        result += `\n${elseBranch}`;
+        result += `\n${alternate}`;
       }
 
       break;

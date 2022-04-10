@@ -460,16 +460,14 @@ test("blocks typecheck all of their contents", () => {
   assert.not.equal(err, types.Unit);
 });
 
-test("the type of an if is the type of all its blocks", () => {
+test("the type of an if is the type of its consequent", () => {
   const { sut } = setup();
 
   const type = sut.typeOf(
     ast.if(
-      [
-        [ast.boolean(true), ast.block([], ast.integer(5))],
-        [ast.boolean(false), ast.block([], ast.integer(42))]
-      ],
-      ast.block([], ast.integer(100))
+      ast.boolean(true),
+      ast.block([], ast.integer(5)),
+      ast.block([], ast.integer(10))
     )
   );
 
@@ -480,18 +478,28 @@ test("errors if the type of an if condition isn't bool", () => {
   const { sut } = setup();
 
   const err = catchErr(() =>
-    sut.typeOf(ast.if([[ast.integer(1), ast.block([], undefined)]], undefined))
+    sut.typeOf(ast.if(ast.integer(1), ast.block([], undefined), undefined))
   );
 
   assert.equal(err, new JijiError(errorKinds.ifCondNotBool(types.Int), span));
 });
 
-test("the expected type of an if without an else is Unit", () => {
+test("the type of an if without an else is Unit", () => {
+  const { sut } = setup();
+
+  const type = sut.typeOf(
+    ast.if(ast.boolean(true), ast.block([], undefined), undefined)
+  );
+
+  assert.equal(type, types.Unit);
+});
+
+test("errors if the type of the consequent of an elseless if is not Unit", () => {
   const { sut } = setup();
 
   const err = catchErr(() =>
     sut.typeOf(
-      ast.if([[ast.boolean(true), ast.block([], ast.integer(1))]], undefined)
+      ast.if(ast.boolean(true), ast.block([], ast.integer(1)), undefined)
     )
   );
 
@@ -501,17 +509,15 @@ test("the expected type of an if without an else is Unit", () => {
   );
 });
 
-test("errors if some branch of an if has a different type", () => {
+test("errors if the alternate of an if has a different type to its consequent", () => {
   const { sut } = setup();
 
   const err = catchErr(() =>
     sut.typeOf(
       ast.if(
-        [
-          [ast.boolean(true), ast.block([], ast.string("if"))],
-          [ast.boolean(true), ast.block([], ast.boolean(false))]
-        ],
-        ast.block([], ast.string("else"))
+        ast.boolean(true),
+        ast.block([], ast.string("if")),
+        ast.block([], ast.boolean(true))
       )
     )
   );

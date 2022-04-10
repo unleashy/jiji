@@ -115,12 +115,33 @@ resolverTest("errors on unknown names", () => {
 resolverTest("blocks do not declare a new scope", () => {
   const sut = new Resolver();
 
+  const insideBlock = ast.exprStmt(ast.integer(1));
   const theAst = ast.module([
-    ast.exprStmt(ast.block([ast.exprStmt(ast.integer(1))], undefined))
+    ast.exprStmt(ast.block([insideBlock], undefined))
   ]);
   const env = sut.resolve(theAst);
 
-  assert.is(env.getScope(theAst), env.getScope(theAst.stmts[0]));
+  assert.is(env.getScope(theAst), env.getScope(insideBlock));
+});
+
+resolverTest("ifs do not declare a new scope", () => {
+  const sut = new Resolver();
+
+  const insideBlock1 = ast.exprStmt(ast.integer(1));
+  const insideBlock2 = ast.exprStmt(ast.integer(2));
+  const theAst = ast.module([
+    ast.exprStmt(
+      ast.if(
+        ast.boolean(true),
+        ast.block([insideBlock1], undefined),
+        ast.block([insideBlock2], undefined)
+      )
+    )
+  ]);
+  const env = sut.resolve(theAst);
+
+  assert.is(env.getScope(theAst), env.getScope(insideBlock1));
+  assert.is(env.getScope(theAst), env.getScope(insideBlock2));
 });
 
 scopeTest.run();
