@@ -89,6 +89,10 @@ export class Resolver {
           currentScope = this.resolveStmt(env, currentScope, stmt);
         }
 
+        if (ast.lastExpr) {
+          this.resolveExpr(env, currentScope, ast.lastExpr);
+        }
+
         break;
       }
 

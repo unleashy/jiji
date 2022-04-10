@@ -28,11 +28,11 @@ async function doCase(path: string): Promise<void> {
 const test = suite("E2E");
 
 const casesDir = path.normalize(__dirname + "/cases");
-const cases = fs.readdirSync(casesDir);
-
-for (const caseName of cases) {
-  const casePath = path.normalize(casesDir + `/${caseName}`);
-  test(caseName, () => doCase(casePath));
-}
+fs.readdirSync(casesDir)
+  .filter(caseName => caseName.includes(".ji"))
+  .forEach(caseName => {
+    const casePath = path.normalize(casesDir + `/${caseName}`);
+    test(caseName, () => doCase(casePath));
+  });
 
 test.run();

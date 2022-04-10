@@ -1,0 +1,31 @@
+-- empty blocks
+{}
+{};
+
+-- simple block
+{
+  1; -- log: 1
+  true; -- log: true
+}
+
+-- block with last expr
+{
+  "not last"; -- log: not last
+  "hello"     -- log: hello
+}
+
+-- block used in expression
+({ 4 * 4 }) + 2; -- log: 18
+
+-- complex block in expression
+42 + ({
+  let a = 100;
+  let b = 500;
+  a + b
+}); -- log: 642
+
+
+-- nested blocks
+{
+  { true } -- log: true
+}

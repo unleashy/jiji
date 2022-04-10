@@ -1,16 +1,30 @@
-import { AstExpr, AstModule, AstStmt } from "./ast";
-import { Types } from "./types";
+import {
+  AstBinary,
+  AstBlock,
+  AstExpr,
+  AstExprWithBlock,
+  AstGroup,
+  AstIf,
+  AstModule,
+  AstStmt,
+  AstUnary,
+  isBlocky
+} from "./ast";
+import { Environment } from "./scope";
+import { types, Types } from "./types";
 import { Int } from "./types/primitives";
 
 export class Codegen {
-  private types: Types;
-  private bindings = new Set<string>();
+  private tmpVarCounter = 0;
 
-  constructor(types: Types) {
-    this.types = types;
-  }
+  constructor(
+    private readonly env: Environment,
+    private readonly types: Types
+  ) {}
 
   generate(ast: AstModule): string {
+    this.tmpVarCounter = 0;
+
     let result = '"use strict";';
 
     for (const stmt of ast.stmts) {
@@ -23,61 +37,129 @@ export class Codegen {
   private genStmt(stmt: AstStmt): string {
     switch (stmt.kind) {
       case "letStmt": {
-        const expr = this.genExpr(stmt.value);
-        if (this.bindings.has(stmt.name)) {
-          return `${stmt.name} = ${expr};`;
+        const { sideEffects, result } = this.genExpr(stmt.value);
+        if (this.env.getScope(stmt.value).hasBinding(stmt.name)) {
+          return `${sideEffects}${stmt.name} = ${result};`;
         } else {
-          this.bindings.add(stmt.name);
-          return `let ${stmt.name} = ${expr};`;
+          return `${sideEffects}let ${stmt.name} = ${result};`;
         }
       }
 
-      case "exprStmt":
-        return `console.log(${this.genExpr(stmt.expr)});`;
+      case "exprStmt": {
+        const { sideEffects, result } = this.genExpr(stmt.expr);
+        if (this.types.typeOf(stmt.expr) === types.Unit) {
+          return `${sideEffects}${result}`;
+        } else {
+          return `${sideEffects}console.log(${result});`;
+        }
+      }
     }
   }
 
-  private genExpr(expr: AstExpr): string {
+  private genExpr(expr: AstExpr): GenResult {
     switch (expr.kind) {
       case "block":
+        return this.genBlock(expr);
+
       case "if":
-        throw new Error("todo");
+        return this.genIf(expr);
 
-      case "binary": {
-        const left = this.genExpr(expr.left);
-        const right = this.genExpr(expr.right);
-        const op = (() => {
-          // prettier-ignore
-          switch (expr.op) {
-            case "==": return "===";
-            case "!=": return "!==";
-            case "~": return "+";
-            default: return expr.op;
-          }
-        })();
-
-        const result = `${left} ${op} ${right}`;
-        if (op === "/" && this.types.typeOf(expr) instanceof Int) {
-          return `(${result}) | 0`;
-        } else {
-          return result;
-        }
-      }
+      case "binary":
+        return this.genBinary(expr);
 
       case "unary":
-        return expr.op + this.genExpr(expr.expr);
+        return this.genUnary(expr);
 
       case "group":
-        return `(${this.genExpr(expr.expr)})`;
+        return this.genGroup(expr);
 
       case "name":
       case "integer":
       case "float":
       case "boolean":
-        return String(expr.value);
+        return GenResult.withoutSideEffects(String(expr.value));
 
       case "string":
-        return JSON.stringify(expr.value);
+        return GenResult.withoutSideEffects(JSON.stringify(expr.value));
     }
+  }
+
+  private genBlock(expr: AstBlock): GenResult {
+    const stmts = expr.stmts.map(stmt => this.genStmt(stmt)).join("");
+
+    if (expr.lastExpr) {
+      const tmpVar = this.nextTmpVar();
+      const lastExpr = this.genExpr(expr.lastExpr);
+
+      return new GenResult(
+        `let ${tmpVar};{${stmts}${lastExpr.sideEffects}${tmpVar} = ${lastExpr.result};}`,
+        tmpVar
+      );
+    } else {
+      return GenResult.withoutResult(`{${stmts}}`);
+    }
+  }
+
+  private genIf(expr: AstIf): GenResult {
+    throw new Error("todo");
+  }
+
+  private genBinary(expr: AstBinary): GenResult {
+    const left = this.genExpr(expr.left);
+    const right = this.genExpr(expr.right);
+    const op = (() => {
+      // prettier-ignore
+      switch (expr.op) {
+        case "==":
+          return "===";
+        case "!=":
+          return "!==";
+        case "~":
+          return "+";
+        default:
+          return expr.op;
+      }
+    })();
+
+    let result = `${left.result} ${op} ${right.result}`;
+    if (op === "/" && this.types.typeOf(expr) instanceof Int) {
+      result = `(${result}) | 0`;
+    }
+
+    return left.useSideEffects(right).setResult(result);
+  }
+
+  private genGroup(expr: AstGroup): GenResult {
+    const gen = this.genExpr(expr.expr);
+    return gen.setResult(`(${gen.result})`);
+  }
+
+  private genUnary(expr: AstUnary): GenResult {
+    const gen = this.genExpr(expr.expr);
+    return gen.setResult(expr.op + gen.result);
+  }
+
+  private nextTmpVar(): string {
+    return `$tmp${this.tmpVarCounter++}`;
+  }
+}
+
+class GenResult {
+  constructor(readonly sideEffects: string, readonly result: string) {}
+
+  setResult(newResult: string): GenResult {
+    return new GenResult(this.sideEffects, newResult);
+  }
+
+  useSideEffects(other: GenResult): GenResult {
+    return new GenResult(this.sideEffects + other.sideEffects, this.result);
+  }
+
+  static withoutSideEffects(result: string): GenResult {
+    return new GenResult("", result);
+  }
+
+  static withoutResult(sideEffects: string): GenResult {
+    return new GenResult(sideEffects, "");
   }
 }

@@ -24,5 +24,5 @@ function compileImpl(file: File): string {
   const types = new Types(env);
   types.typeOf(ast); // typecheck
 
-  return new Codegen(types).generate(ast);
+  return new Codegen(env, types).generate(ast);
 }
