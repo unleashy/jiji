@@ -1,30 +1,25 @@
+import { customAlphabet } from "nanoid";
 import {
   AstBinary,
   AstBlock,
   AstExpr,
-  AstExprWithBlock,
   AstGroup,
   AstIf,
   AstModule,
   AstStmt,
-  AstUnary,
-  isBlocky
+  AstUnary
 } from "./ast";
 import { Environment } from "./scope";
 import { types, Types } from "./types";
 import { Int } from "./types/primitives";
 
 export class Codegen {
-  private tmpVarCounter = 0;
-
   constructor(
     private readonly env: Environment,
     private readonly types: Types
   ) {}
 
   generate(ast: AstModule): string {
-    this.tmpVarCounter = 0;
-
     let result = '"use strict";';
 
     for (const stmt of ast.stmts) {
@@ -88,7 +83,7 @@ export class Codegen {
     const stmts = expr.stmts.map(stmt => this.genStmt(stmt)).join("");
 
     if (expr.lastExpr) {
-      const tmpVar = this.nextTmpVar();
+      const tmpVar = uniqueName();
       const lastExpr = this.genExpr(expr.lastExpr);
 
       return new GenResult(
@@ -138,14 +133,18 @@ export class Codegen {
     const gen = this.genExpr(expr.expr);
     return gen.setResult(expr.op + gen.result);
   }
-
-  private nextTmpVar(): string {
-    return `$tmp${this.tmpVarCounter++}`;
-  }
 }
 
 class GenResult {
   constructor(readonly sideEffects: string, readonly result: string) {}
+
+  static withoutSideEffects(result: string): GenResult {
+    return new GenResult("", result);
+  }
+
+  static withoutResult(sideEffects: string): GenResult {
+    return new GenResult(sideEffects, "");
+  }
 
   setResult(newResult: string): GenResult {
     return new GenResult(this.sideEffects, newResult);
@@ -155,11 +154,24 @@ class GenResult {
     return new GenResult(this.sideEffects + other.sideEffects, this.result);
   }
 
-  static withoutSideEffects(result: string): GenResult {
-    return new GenResult("", result);
+  addSideEffect(sideEffect: string): GenResult {
+    return new GenResult(this.sideEffects + sideEffect, this.result);
   }
 
-  static withoutResult(sideEffects: string): GenResult {
-    return new GenResult(sideEffects, "");
+  setSideEffect(sideEffect: string): GenResult {
+    return new GenResult(sideEffect, this.result);
   }
+
+  get hasSideEffects(): boolean {
+    return this.sideEffects !== "";
+  }
+}
+
+const nameGenerator = customAlphabet(
+  "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
+  8
+);
+
+function uniqueName(): string {
+  return `$gen_${nameGenerator()}`;
 }

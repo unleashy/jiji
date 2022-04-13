@@ -29,7 +29,7 @@ const test = suite("E2E");
 
 const casesDir = path.normalize(__dirname + "/cases");
 fs.readdirSync(casesDir)
-  .filter(caseName => caseName.includes(".ji"))
+  .filter(caseName => /\.ji$/.test(caseName))
   .forEach(caseName => {
     const casePath = path.normalize(casesDir + `/${caseName}`);
     test(caseName, () => doCase(casePath));

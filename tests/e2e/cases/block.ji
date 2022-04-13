@@ -24,7 +24,6 @@
   a + b
 }); -- log: 642
 
-
 -- nested blocks
 {
   { true } -- log: true

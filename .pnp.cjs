@@ -37,6 +37,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@parcel/transformer-typescript-types", "virtual:40f4b67a82bdea53e74c2d9b880daeae8a57a5a3238012dfe10bba1fac58c0c690b1688e3041d4b2ad58314c1deee7b364c3a58e941879d9f52dcfc9d883fa6d#npm:2.4.0"],\
             ["@types/node", "npm:17.0.23"],\
             ["c8", "npm:7.11.0"],\
+            ["nanoid", "npm:3.3.2"],\
             ["parcel", "npm:2.4.0"],\
             ["prettier", "npm:2.6.0"],\
             ["sade", "npm:1.8.1"],\
@@ -2366,6 +2367,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@parcel/transformer-typescript-types", "virtual:40f4b67a82bdea53e74c2d9b880daeae8a57a5a3238012dfe10bba1fac58c0c690b1688e3041d4b2ad58314c1deee7b364c3a58e941879d9f52dcfc9d883fa6d#npm:2.4.0"],\
             ["@types/node", "npm:17.0.23"],\
             ["c8", "npm:7.11.0"],\
+            ["nanoid", "npm:3.3.2"],\
             ["parcel", "npm:2.4.0"],\
             ["prettier", "npm:2.6.0"],\
             ["sade", "npm:1.8.1"],\
@@ -2672,6 +2674,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [\
             ["nan", "npm:2.15.0"],\
             ["node-gyp", "npm:9.0.0"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["nanoid", [\
+        ["npm:3.3.2", {\
+          "packageLocation": "./.yarn/cache/nanoid-npm-3.3.2-8c41a1931d-376717f068.zip/node_modules/nanoid/",\
+          "packageDependencies": [\
+            ["nanoid", "npm:3.3.2"]\
           ],\
           "linkType": "HARD"\
         }]\
