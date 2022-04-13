@@ -83,13 +83,17 @@ export class Codegen {
     const stmts = expr.stmts.map(stmt => this.genStmt(stmt)).join("");
 
     if (expr.lastExpr) {
-      const tmpVar = uniqueName();
       const lastExpr = this.genExpr(expr.lastExpr);
 
-      return new GenResult(
-        `let ${tmpVar};{${stmts}${lastExpr.sideEffects}${tmpVar} = ${lastExpr.result};}`,
-        tmpVar
-      );
+      if (this.types.typeOf(expr.lastExpr) === types.Unit) {
+        return GenResult.withoutResult(`{${stmts}${lastExpr.sideEffects}}`);
+      } else {
+        const tmpVar = uniqueName();
+        return new GenResult(
+          `let ${tmpVar};{${stmts}${lastExpr.sideEffects}${tmpVar} = ${lastExpr.result};}`,
+          tmpVar
+        );
+      }
     } else {
       return GenResult.withoutResult(`{${stmts}}`);
     }

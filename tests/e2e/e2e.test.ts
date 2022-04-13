@@ -20,9 +20,18 @@ async function doCase(path: string): Promise<void> {
   const expectedLogs = getExpectedLogs(code);
 
   const js = compile(code);
-  const actualLogs = execJiji(js);
 
-  assert.equal(actualLogs, expectedLogs);
+  try {
+    const actualLogs = execJiji(js);
+
+    assert.equal(actualLogs, expectedLogs);
+  } catch (e) {
+    if (e instanceof SyntaxError) {
+      throw new SyntaxError(`${e.message} - code:\n${js}`);
+    } else {
+      throw e;
+    }
+  }
 }
 
 const test = suite("E2E");
