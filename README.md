@@ -11,7 +11,7 @@ Small programming language that compiles to JS
 - [x] string concatenation
 - [x] block scopes
 - [x] conditionals (if)
-- [~] && and ||
+- [x] && and ||
 - [ ] hex int literal
 - [ ] functions
 - [ ] loops (tail call elimination?)
