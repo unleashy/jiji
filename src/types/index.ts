@@ -166,39 +166,41 @@ export class Types {
     switch (ast.op) {
       case "==":
       case "!=":
-        if (leftType !== rightType) {
-          throw new JijiError(
-            errorKinds.binaryTypeMismatch(leftType, ast.op, rightType),
-            ast.span
-          );
+        if (leftType === rightType) {
+          return types.Bool;
         }
 
-        return types.Bool;
+        break;
 
       case "<":
       case "<=":
       case ">":
       case ">=":
-        if (!leftType.isOrderableAgainst(rightType)) {
-          throw new JijiError(
-            errorKinds.binaryTypeMismatch(leftType, ast.op, rightType),
-            ast.span
-          );
+        if (leftType.isOrderableAgainst(rightType)) {
+          return types.Bool;
         }
 
-        return types.Bool;
+        break;
+
+      case "&&":
+      case "||":
+        if (leftType === types.Bool && rightType === types.Bool) {
+          return types.Bool;
+        }
+
+        break;
 
       default:
         const result = leftType.applyBinaryOp(ast.op, rightType);
-        if (result === undefined) {
-          throw new JijiError(
-            errorKinds.binaryTypeMismatch(leftType, ast.op, rightType),
-            ast.span
-          );
+        if (result !== undefined) {
+          return result;
         }
-
-        return result;
     }
+
+    throw new JijiError(
+      errorKinds.binaryTypeMismatch(leftType, ast.op, rightType),
+      ast.span
+    );
   }
 
   private typeOfUnary(ast: AstUnary): Type {

@@ -334,6 +334,58 @@ test("comparing non-Ints/Floats for order is an error", () => {
   );
 });
 
+test("the type of an and expression is bool", () => {
+  const { sut } = setup();
+
+  const type = sut.typeOf(
+    ast.binary(ast.boolean(true), "&&", ast.boolean(false))
+  );
+
+  assert.equal(type, types.Bool);
+});
+
+test("the type of an or expression is bool", () => {
+  const { sut } = setup();
+
+  const type = sut.typeOf(
+    ast.binary(ast.boolean(false), "||", ast.boolean(true))
+  );
+
+  assert.equal(type, types.Bool);
+});
+
+test("and-ing non-Bools is an error", () => {
+  const { sut } = setup();
+
+  const err = catchErr(() =>
+    sut.typeOf(ast.binary(ast.boolean(false), "&&", ast.integer(1)))
+  );
+
+  assert.equal(
+    err,
+    new JijiError(
+      errorKinds.binaryTypeMismatch(types.Bool, "&&", types.Int),
+      span
+    )
+  );
+});
+
+test("or-ing non-Bools is an error", () => {
+  const { sut } = setup();
+
+  const err = catchErr(() =>
+    sut.typeOf(ast.binary(ast.integer(1), "||", ast.boolean(true)))
+  );
+
+  assert.equal(
+    err,
+    new JijiError(
+      errorKinds.binaryTypeMismatch(types.Int, "||", types.Bool),
+      span
+    )
+  );
+});
+
 test("typechecking is done as deeply as possible", () => {
   const { sut } = setup();
 
