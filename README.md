@@ -9,8 +9,8 @@ Small programming language that compiles to JS
   - [x] float
   - [x] string
 - [x] string concatenation
-- [~] block scopes
-- [~] conditionals (if)
+- [x] block scopes
+- [x] conditionals (if)
 - [ ] && and ||
 - [ ] hex int literal
 - [ ] functions
