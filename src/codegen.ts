@@ -79,27 +79,77 @@ export class Codegen {
   }
 
   private genBlock(expr: AstBlock): GenResult {
-    const stmts = expr.stmts.map(stmt => this.genStmt(stmt)).join("");
-
-    if (expr.lastExpr) {
-      const lastExpr = this.genExpr(expr.lastExpr);
-
-      if (this.types.typeOf(expr.lastExpr) === types.Unit) {
-        return GenResult.withoutResult(`{${stmts}${lastExpr.sideEffects}}`);
-      } else {
-        const tmpVar = uniqueName();
-        return new GenResult(
-          `let ${tmpVar};{${stmts}${lastExpr.sideEffects}${tmpVar} = ${lastExpr.result};}`,
-          tmpVar
-        );
-      }
+    const tmpVar = uniqueName();
+    const [block, usesVar] = this.genBlockSideEffects(expr, tmpVar);
+    if (usesVar) {
+      return new GenResult(`let ${tmpVar};${block}`, tmpVar);
     } else {
-      return GenResult.withoutResult(`{${stmts}}`);
+      return GenResult.withoutResult(block);
     }
   }
 
   private genIf(expr: AstIf): GenResult {
-    throw new Error("todo");
+    const tmpVar = uniqueName();
+    const [theIf, usesVar] = this.genIfSideEffects(expr, tmpVar);
+    if (usesVar) {
+      return new GenResult(`let ${tmpVar};${theIf}`, tmpVar);
+    } else {
+      return GenResult.withoutResult(theIf);
+    }
+  }
+
+  private genIfSideEffects(expr: AstIf, varName: string): [string, boolean] {
+    const condition = this.genExpr(expr.condition);
+
+    const [consBlock, consUsesVar] = this.genBlockSideEffects(
+      expr.consequent,
+      varName
+    );
+
+    const ifPart = `${condition.sideEffects}if (${condition.result}) ${consBlock}`;
+
+    if (expr.alternate === undefined) {
+      return [ifPart, consUsesVar];
+    } else if (expr.alternate.kind === "block") {
+      const [altBlock, altUsesVar] = this.genBlockSideEffects(
+        expr.consequent,
+        varName
+      );
+
+      return [`${ifPart} else ${altBlock}`, consUsesVar || altUsesVar];
+    } else {
+      const [altIf, altUsesVar] = this.genIfSideEffects(
+        expr.alternate,
+        varName
+      );
+
+      if (altIf.startsWith("if")) {
+        return [`${ifPart} else ${altIf}`, consUsesVar || altUsesVar];
+      } else {
+        return [`${ifPart} else {${altIf}}`, consUsesVar || altUsesVar];
+      }
+    }
+  }
+
+  private genBlockSideEffects(
+    expr: AstBlock,
+    varName: string
+  ): [string, boolean] {
+    const stmts = expr.stmts.map(stmt => this.genStmt(stmt)).join("");
+    if (expr.lastExpr) {
+      const lastExpr = this.genExpr(expr.lastExpr);
+
+      if (this.types.typeOf(expr.lastExpr) === types.Unit) {
+        return [`{${stmts}${lastExpr.sideEffects}}`, false];
+      } else {
+        return [
+          `{${stmts}${lastExpr.sideEffects}${varName} = ${lastExpr.result};}`,
+          true
+        ];
+      }
+    } else {
+      return [`{${stmts}}`, false];
+    }
   }
 
   private genBinary(expr: AstBinary): GenResult {
@@ -170,6 +220,10 @@ class GenResult {
 
   setSideEffect(sideEffect: string): GenResult {
     return new GenResult(sideEffect, this.result);
+  }
+
+  get hasResult(): boolean {
+    return this.result !== "";
   }
 }
 
