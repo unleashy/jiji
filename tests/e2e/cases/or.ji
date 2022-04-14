@@ -1,0 +1,15 @@
+-- basic
+true || true; -- log: true
+true || false; -- log: true
+false || true; -- log: true
+false || false; -- log: false
+
+-- with blocks oh god why
+true || ({ "mustn't print"; true }); -- log: true
+
+-- log: must print 1
+({ "must print 1"; false }) || true; -- log: true
+
+-- log: must print 2
+-- log: must print 3
+({ "must print 2"; false }) || ({ "must print 3"; false }); -- log: false

@@ -153,6 +153,12 @@ export class Codegen {
   }
 
   private genBinary(expr: AstBinary): GenResult {
+    if (expr.op === "||") {
+      return this.genOr(expr);
+    } else if (expr.op === "&&") {
+      return this.genAnd(expr);
+    }
+
     const left = this.genExpr(expr.left);
     const right = this.genExpr(expr.right);
     const op = (() => {
@@ -175,6 +181,42 @@ export class Codegen {
     }
 
     return left.joinSideEffects(right).setResult(result);
+  }
+
+  private genOr(expr: AstBinary): GenResult {
+    const left = this.genExpr(expr.left);
+    const right = this.genExpr(expr.right);
+
+    if (right.hasSideEffects) {
+      const tmpVar = uniqueName();
+      return new GenResult(
+        `${left.sideEffects} let ${tmpVar} = ${left.result};  ` +
+          `if (!${tmpVar}) { ${right.sideEffects} ${tmpVar} = ${right.result}; }`,
+        tmpVar
+      );
+    } else {
+      const result = `${left.result} || ${right.result}`;
+
+      return left.setResult(result);
+    }
+  }
+
+  private genAnd(expr: AstBinary): GenResult {
+    const left = this.genExpr(expr.left);
+    const right = this.genExpr(expr.right);
+
+    if (right.hasSideEffects) {
+      const tmpVar = uniqueName();
+      return new GenResult(
+        `${left.sideEffects} let ${tmpVar} = ${left.result};  ` +
+          `if (${tmpVar}) { ${right.sideEffects} ${tmpVar} = ${right.result}; }`,
+        tmpVar
+      );
+    } else {
+      const result = `${left.result} && ${right.result}`;
+
+      return left.setResult(result);
+    }
   }
 
   private genGroup(expr: AstGroup): GenResult {
@@ -224,6 +266,10 @@ class GenResult {
 
   get hasResult(): boolean {
     return this.result !== "";
+  }
+
+  get hasSideEffects(): boolean {
+    return this.sideEffects !== "";
   }
 }
 
