@@ -14,6 +14,12 @@ if 50 > 20 + 10 {
   "not ok"
 } -- log: ok
 
+if 1 > 2 {
+  "greater"
+} else {
+  "lesser"
+} -- log: lesser
+
 if "yip" == "yop" {
   0
 } else if "zup" == "zup" {

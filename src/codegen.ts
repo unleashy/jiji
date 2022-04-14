@@ -112,7 +112,7 @@ export class Codegen {
       return [ifPart, consUsesVar];
     } else if (expr.alternate.kind === "block") {
       const [altBlock, altUsesVar] = this.genBlockSideEffects(
-        expr.consequent,
+        expr.alternate,
         varName
       );
 
