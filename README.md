@@ -11,7 +11,7 @@ Small programming language that compiles to JS
 - [x] string concatenation
 - [x] block scopes
 - [x] conditionals (if)
-- [ ] && and ||
+- [~] && and ||
 - [ ] hex int literal
 - [ ] functions
 - [ ] loops (tail call elimination?)
@@ -41,8 +41,10 @@ ExprWithBlock ← BlockExpr
 BlockExpr  ← "{" Stmt* ExprWithoutBlock? "}"
 IfExpr     ← "if" ExprWithoutBlock BlockExpr ("else" (BlockExpr / IfExpr))?
 
-ExprWithoutBlock ← EqExpr
+ExprWithoutBlock ← OrExpr
 
+OrExpr    ← AndExpr ("||" AndExpr)*
+AndExpr   ← EqExpr ("&&" EqExpr)*
 EqExpr    ← CmpExpr (("==" / "!=") CmpExpr)?
 CmpExpr   ← CatExpr (("<" / "<=" / ">" / ">=") CatExpr)?
 CatExpr   ← AddExpr ("~" AddExpr)*
