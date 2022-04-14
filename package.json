@@ -24,7 +24,8 @@
       "isLibrary": false,
       "includeNodeModules": [
         "sade",
-        "mri"
+        "mri",
+        "nanoid"
       ]
     }
   },
