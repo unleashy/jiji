@@ -199,6 +199,28 @@ const testCases: TestCase[] = [
     `
   },
   {
+    desc: "accepts and expressions",
+    input: "true && false;",
+    output: `
+      module<0,14>
+        exprStmt<0,14>
+          binary<0,13> &&
+            boolean<0,4> true
+            boolean<8,5> false
+    `
+  },
+  {
+    desc: "accepts or expressions",
+    input: "false || true;",
+    output: `
+      module<0,14>
+        exprStmt<0,14>
+          binary<0,13> ||
+            boolean<0,5> false
+            boolean<9,4> true
+    `
+  },
+  {
     desc: "accepts parenthesised expressions",
     input: "(1 + 2);",
     output: `
@@ -225,27 +247,31 @@ const testCases: TestCase[] = [
   },
   {
     desc: "follows precedence and associativity correctly",
-    input: "1 + 2 - 3 * 4 / 5 ~ 6 > 7 == 8 < 9;",
+    input: "1 + 2 - 3 * 4 / 5 ~ 6 > 7 == 8 < 9 && 10 || 11;",
     output: `
-      module<0,35>
-        exprStmt<0,35>
-          binary<0,34> ==
-            binary<0,25> >
-              binary<0,21> ~
-                binary<0,17> -
-                  binary<0,5> +
-                    integer<0,1> 1
-                    integer<4,1> 2
-                  binary<8,9> /
-                    binary<8,5> *
-                      integer<8,1> 3
-                      integer<12,1> 4
-                    integer<16,1> 5
-                integer<20,1> 6
-              integer<24,1> 7
-            binary<29,5> <
-              integer<29,1> 8
-              integer<33,1> 9
+      module<0,47>
+        exprStmt<0,47>
+          binary<0,46> ||
+            binary<0,40> &&
+              binary<0,34> ==
+                binary<0,25> >
+                  binary<0,21> ~
+                    binary<0,17> -
+                      binary<0,5> +
+                        integer<0,1> 1
+                        integer<4,1> 2
+                      binary<8,9> /
+                        binary<8,5> *
+                          integer<8,1> 3
+                          integer<12,1> 4
+                        integer<16,1> 5
+                    integer<20,1> 6
+                  integer<24,1> 7
+                binary<29,5> <
+                  integer<29,1> 8
+                  integer<33,1> 9
+              integer<38,2> 10
+            integer<44,2> 11
     `
   },
   {

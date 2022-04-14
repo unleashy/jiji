@@ -190,13 +190,17 @@ export class Parser {
 // noinspection JSUnusedGlobalSymbols
 enum Precedence {
   none,
+  or,
+  and,
   eq,
   cmp,
   cat,
   add,
   mul,
   unary,
-  primary
+  primary,
+
+  $initial = or
 }
 
 type PrefixRule<K extends Kind> = (token: Token<K>) => AstExpr;
@@ -218,7 +222,9 @@ const kindToBinaryOp: Readonly<Partial<Record<keyof Kinds, BinaryOp>>> =
     lessEqual: "<=",
     greater: ">",
     greaterEqual: ">=",
-    tilde: "~"
+    tilde: "~",
+    andAnd: "&&",
+    pipePipe: "||"
   });
 
 const kindToUnaryOp: Readonly<Partial<Record<keyof Kinds, UnaryOp>>> =
@@ -251,12 +257,14 @@ class PrecedenceParser {
     this.prefixRule("plus",  this.unary);
     this.prefixRule("minus", this.unary);
 
-    this.infixRule("equals",       this.eq, Precedence.eq);
-    this.infixRule("bangEquals",   this.eq, Precedence.eq);
-    this.infixRule("less",         this.cmp, Precedence.cmp);
-    this.infixRule("lessEqual",    this.cmp, Precedence.cmp);
-    this.infixRule("greater",      this.cmp, Precedence.cmp);
-    this.infixRule("greaterEqual", this.cmp, Precedence.cmp);
+    this.infixRule("pipePipe",     this.binary, Precedence.or);
+    this.infixRule("andAnd",       this.binary, Precedence.and);
+    this.infixRule("equals",       this.eq,     Precedence.eq);
+    this.infixRule("bangEquals",   this.eq,     Precedence.eq);
+    this.infixRule("less",         this.cmp,    Precedence.cmp);
+    this.infixRule("lessEqual",    this.cmp,    Precedence.cmp);
+    this.infixRule("greater",      this.cmp,    Precedence.cmp);
+    this.infixRule("greaterEqual", this.cmp,    Precedence.cmp);
     this.infixRule("tilde",        this.binary, Precedence.cat);
     this.infixRule("plus",         this.binary, Precedence.add);
     this.infixRule("minus",        this.binary, Precedence.add);
@@ -266,7 +274,7 @@ class PrecedenceParser {
   }
 
   parseExpr(): AstExpr {
-    return this.parsePrecedence(Precedence.eq);
+    return this.parsePrecedence(Precedence.$initial);
   }
 
   private binaryNoChain(

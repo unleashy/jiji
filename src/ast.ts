@@ -53,7 +53,7 @@ export interface AstIf extends AstCommon<"if"> {
 
 export type BasicOp = "+" | "-" | "*" | "/" | "%" | "~";
 export type OrderingOp = "<" | "<=" | ">" | ">=";
-export type BinaryOp = OrderingOp | BasicOp | "==" | "!=";
+export type BinaryOp = OrderingOp | BasicOp | "==" | "!=" | "||" | "&&";
 
 export interface AstBinary extends AstCommon<"binary"> {
   left: AstExpr;
