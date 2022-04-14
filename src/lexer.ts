@@ -276,6 +276,12 @@ export class Lexer {
 
         case undefined: return kinds.end;
 
+        case "&":
+          return this.source.match("&") ? kinds.andAnd : kinds.and;
+
+        case "|":
+          return this.source.match("|") ? kinds.pipePipe : kinds.pipe;
+
         default:
           throw new JijiError(errorKinds.unknownChar(c), this.source.endSpan());
       }

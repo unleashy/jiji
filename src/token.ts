@@ -42,7 +42,11 @@ export const kinds = Object.freeze({
   greater: kind({ name: "greater" }),
   greaterEqual: kind({ name: "greaterEqual" }),
   colon: kind({ name: "colon" }),
-  tilde: kind({ name: "tilde" })
+  tilde: kind({ name: "tilde" }),
+  and: kind({ name: "and" }),
+  andAnd: kind({ name: "andAnd" }),
+  pipe: kind({ name: "pipe" }),
+  pipePipe: kind({ name: "pipePipe" })
 });
 
 export type Kinds = typeof kinds;

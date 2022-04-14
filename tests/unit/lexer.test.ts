@@ -39,7 +39,7 @@ const testCases: TestCase[] = [
   },
   {
     desc: "accepts all single-character symbols",
-    input: ";+-*/%()!<>:=~{}",
+    input: ";+-*/%()!<>:=~{}&|",
     output: s => [
       new Token(kinds.semi, s(0, 1)),
       new Token(kinds.plus, s(1, 1)),
@@ -57,18 +57,22 @@ const testCases: TestCase[] = [
       new Token(kinds.tilde, s(13, 1)),
       new Token(kinds.braceOpen, s(14, 1)),
       new Token(kinds.braceClose, s(15, 1)),
-      new Token(kinds.end, s(16, 0))
+      new Token(kinds.and, s(16, 1)),
+      new Token(kinds.pipe, s(17, 1)),
+      new Token(kinds.end, s(18, 0))
     ]
   },
   {
     desc: "accepts all multi-character symbols",
-    input: "== != <= >=",
+    input: "== != <= >= && ||",
     output: s => [
       new Token(kinds.equals, s(0, 2)),
       new Token(kinds.bangEquals, s(3, 2)),
       new Token(kinds.lessEqual, s(6, 2)),
       new Token(kinds.greaterEqual, s(9, 2)),
-      new Token(kinds.end, s(11, 0))
+      new Token(kinds.andAnd, s(12, 2)),
+      new Token(kinds.pipePipe, s(15, 2)),
+      new Token(kinds.end, s(17, 0))
     ]
   },
   {
