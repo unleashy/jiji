@@ -1,4 +1,4 @@
-import { customAlphabet } from "nanoid";
+import { customAlphabet } from "nanoid/non-secure";
 import {
   AstBinary,
   AstBlock,
@@ -11,7 +11,6 @@ import {
 } from "./ast";
 import { Environment } from "./scope";
 import { types, Types } from "./types";
-import { Int } from "./types/primitives";
 
 export class Codegen {
   constructor(
@@ -121,21 +120,24 @@ export class Codegen {
     })();
 
     let result = `${left.result} ${op} ${right.result}`;
-    if (op === "/" && this.types.typeOf(expr) instanceof Int) {
+    if (op === "/" && this.types.typeOf(expr) === types.Int) {
       result = `(${result}) | 0`;
     }
 
-    return left.useSideEffects(right).setResult(result);
+    return left.joinSideEffects(right).setResult(result);
   }
 
   private genGroup(expr: AstGroup): GenResult {
     const gen = this.genExpr(expr.expr);
-    return gen.setResult(`(${gen.result})`);
+    if (this.types.typeOf(expr.expr) === types.Unit) {
+      return gen;
+    } else {
+      return gen.mapResult(result => `(${result})`);
+    }
   }
 
   private genUnary(expr: AstUnary): GenResult {
-    const gen = this.genExpr(expr.expr);
-    return gen.setResult(expr.op + gen.result);
+    return this.genExpr(expr.expr).mapResult(result => expr.op + result);
   }
 }
 
@@ -150,24 +152,24 @@ class GenResult {
     return new GenResult(sideEffects, "");
   }
 
+  mapResult(f: (result: string) => string): GenResult {
+    return this.setResult(f(this.result));
+  }
+
+  mapSideEffects(f: (sideEffects: string) => string): GenResult {
+    return this.setSideEffect(f(this.sideEffects));
+  }
+
+  joinSideEffects(other: GenResult): GenResult {
+    return this.mapSideEffects(sideEffects => sideEffects + other.sideEffects);
+  }
+
   setResult(newResult: string): GenResult {
     return new GenResult(this.sideEffects, newResult);
   }
 
-  useSideEffects(other: GenResult): GenResult {
-    return new GenResult(this.sideEffects + other.sideEffects, this.result);
-  }
-
-  addSideEffect(sideEffect: string): GenResult {
-    return new GenResult(this.sideEffects + sideEffect, this.result);
-  }
-
   setSideEffect(sideEffect: string): GenResult {
     return new GenResult(sideEffect, this.result);
-  }
-
-  get hasSideEffects(): boolean {
-    return this.sideEffects !== "";
   }
 }
 

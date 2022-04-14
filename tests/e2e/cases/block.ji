@@ -32,3 +32,6 @@
 {
   { "unit"; } -- log: unit
 }
+
+-- weird unit group block
+({ "abc"; }); -- log: abc
